@@ -447,8 +447,8 @@ class SetPre4DEEModel(nn.Module):
                 outputs, targets = self.Setpred4DEE(doc_sent_context, batch_span_context, doc_span_info, event_idx, train_flag=False)
                 pred_event = outputs["pred_doc_event_logps"].softmax(-1).argmax(-1)  # [num_sets,event_types]
                 pred_role = outputs["pred_role_logits"].softmax(-1).argmax(-1)  # [num_sets,num_roles,num_etities]
-                gold_event = event_type_idxs_list
-                gold_role = event_arg_idxs_objs_list
+                gold_event = event_type_idxs_list[event_idx]  # tzhu: event-specific slice
+                gold_role = event_arg_idxs_objs_list[event_idx]  # tzhu: event-specific slice
                 return pred_event, gold_event, pred_role, gold_role, len(span_context_list)
 
     def adjust_token_label(self, doc_token_labels_list):

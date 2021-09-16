@@ -347,27 +347,32 @@ class DEEFeature(object):
             return gold_span_idx2pred_span_idx
 
     def extract_predicted_instances(self, pred_event_arg_idxs_objs_list, non_ent_idx):
-        validation_flags = []
-        instances = []
+        validation_flags = [list() for _ in range(len(event_type_fields_list))]
+        instances = [list() for _ in range(len(event_type_fields_list))]
 
-        for event_instances in pred_event_arg_idxs_objs_list:
+        for event_idx, event_instances in enumerate(pred_event_arg_idxs_objs_list):
             if event_instances is None:
-                pass
+                # tzhu: make sure there is at least one gold instance for each type
+                _ins = [non_ent_idx for _ in range(len(event_type_fields_list[event_idx][1]))]
+                instances[event_idx].append(_ins)
+                validation_flags[event_idx].append(0)
             else:
                 for instance in event_instances:
                     if all(arg is None for arg in instance):
-                        validation_flags.append(0)
-                        instances.append(None)
-                        continue
+                        # instances.append(None)
+                        # continue
+                        _ins = [non_ent_idx for _ in range(len(event_type_fields_list[event_idx][1]))]
+                        instances[event_idx].append(_ins)
+                        validation_flags[event_idx].append(0)
                     else:
                         _ins = []
-                        validation_flags.append(1)
+                        validation_flags[event_idx].append(1)
                         for arg in instance:
                             if arg is not None:
                                 _ins.append(arg)
                             else:
                                 _ins.append(non_ent_idx)
-                        instances.append(_ins)
+                        instances[event_idx].append(_ins)
 
         return instances, validation_flags
 

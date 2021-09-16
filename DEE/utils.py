@@ -94,5 +94,3 @@ def strtobool(str_val):
         return False
     else:
         raise ValueError("invalid truth value %r" % (str_val,))
-
-
