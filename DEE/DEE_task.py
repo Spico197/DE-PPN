@@ -20,7 +20,10 @@ from .dee_model import SetPre4DEEModel
 class DEETaskSetting(TaskSetting):
     base_key_attrs = TaskSetting.base_key_attrs
     base_attr_default_pairs = [
-        ('train_file_name', 'train.json'),
+        # ('train_file_name', 'train.json'),
+        # ('dev_file_name', 'dev.json'),
+        # ('test_file_name', 'test.json'),
+        ('train_file_name', 'dev.json'),
         ('dev_file_name', 'dev.json'),
         ('test_file_name', 'test.json'),
         ('summary_dir_name', '/tmp/Summary'),
@@ -30,7 +33,7 @@ class DEETaskSetting(TaskSetting):
         ('gradient_accumulation_steps', 16),
         ('eval_batch_size', 8),
         ('learning_rate', 1e-5),
-        ('num_train_epochs', 50),
+        ('num_train_epochs', 100),
         ('no_cuda', False),
         ('local_rank', -1),
         ('seed', 99),
@@ -93,7 +96,8 @@ class DEETask(BasePytorchTask):
         self.event_type_fields_pairs = DEEExample.get_event_type_fields_pairs()
 
         # build example loader
-        self.example_loader_func = DEEExampleLoader(self.setting.rearrange_sent, self.setting.max_sent_len, self.setting.train_on_multi_events, self.setting.train_on_single_event)
+        # self.example_loader_func = DEEExampleLoader(self.setting.rearrange_sent, self.setting.max_sent_len, self.setting.train_on_multi_events, self.setting.train_on_single_event)
+        self.example_loader_func = DEEExampleLoader(self.setting.rearrange_sent, self.setting.max_sent_len)
 
         # build feature converter
         self.feature_converter_func = DEEFeatureConverter(
@@ -134,17 +138,17 @@ class DEETask(BasePytorchTask):
             ner_model.bert.pooler = PseudoPooler()
         else:
             ner_model = BertForBasicNER.from_pretrained(
-                self.setting.bert_model, num_entity_labels = self.setting.num_entity_labels, use_crf_layer = self.setting.use_crf_layer
+                self.setting.bert_model, num_entity_labels = self.setting.num_entity_labels
             )
             self.setting.update_by_dict(ner_model.config.__dict__)  #
             ner_model = None
 
-        if self.setting.model_type == 'SetPre4DEE':
-            self.model = SetPre4DEEModel(
-                self.setting, self.event_type_fields_pairs, ner_model=ner_model,
-            )
-        else:
-            raise Exception('Unsupported model type {}'.format(self.setting.model_type))
+        # if self.setting.model_type == 'SetPre4DEE':
+        self.model = SetPre4DEEModel(
+            self.setting, self.event_type_fields_pairs, ner_model=ner_model,
+        )
+        # else:
+        #     raise Exception('Unsupported model type {}'.format(self.setting.model_type))
 
         self._decorate_model(parallel_decorate=parallel_decorate)
 

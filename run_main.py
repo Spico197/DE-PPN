@@ -8,7 +8,7 @@ import torch.distributed as dist
 
 from DEE.utils import set_basic_log_config, strtobool, default_dump_result_json
 from DEE.DEE_task import DEETask, DEETaskSetting
-from DEE.lg4dee_helper import aggregate_task_eval_info, print_total_eval_info, print_single_vs_multi_performance
+# from DEE.lg4dee_helper import aggregate_task_eval_info, print_total_eval_info, print_single_vs_multi_performance
 
 set_basic_log_config()
 
@@ -46,8 +46,8 @@ def parse_args(in_args=None):
                             help = 'whether only train only on single-event datasets')
     arg_parser.add_argument('--event_type_classes', type=int, default=2)
     arg_parser.add_argument('--train_on_multi_roles', type=strtobool, default=False)
-    arg_parser.add_argument('--use_event_type_enc', type=strtobool, default=False)
-    arg_parser.add_argument('--use_role_decoder', type=strtobool, default=False)
+    arg_parser.add_argument('--use_event_type_enc', type=strtobool, default=True)
+    arg_parser.add_argument('--use_role_decoder', type=strtobool, default=True)
     arg_parser.add_argument('--use_sent_span_encoder', type=strtobool, default=True)
     arg_parser.add_argument('--start_epoch', type=int, default=30, help = 'start cpt model and save id')
 
@@ -64,7 +64,6 @@ def parse_args(in_args=None):
 
 
 if __name__ == '__main__':
-    os.environ["CUDA_VISIBLE_DEVICES"] = '3'
     in_argv = parse_args()
     task_dir = os.path.join(in_argv.exp_dir, in_argv.task_name)
     if not os.path.exists(task_dir):
@@ -81,6 +80,20 @@ if __name__ == '__main__':
     # default_dump_result_json(dee_setting, eval_result_file_path)
     # build task
     dee_task = DEETask(dee_setting, load_train=not in_argv.skip_train)
+
+    total_param = []
+    trainable_param = []
+    un_trainable_param = []
+    for name, parameters in dee_task.model.named_parameters():
+        num_params = len(parameters)
+        total_param.append(num_params)
+        if parameters.requires_grad:
+            trainable_param.append(num_params)
+        else:
+            un_trainable_param.append(num_params)
+        print(f"{name}, trainable: {parameters.requires_grad}, {num_params}")
+    print('---------------------------------------------------------------------')
+    print(f"total: {sum(total_param)}, trainable: {sum(trainable_param)}, un-trainable: {sum(un_trainable_param)}")
 
     if not in_argv.skip_train:
         # dump hyper-parameter settings

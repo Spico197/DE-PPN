@@ -1,8 +1,10 @@
 import torch.nn as nn
 import torch
-from transformers.modeling_bert import BertIntermediate, BertOutput, BertAttention, BertLayerNorm, BertSelfAttention, BertConfig, BertEncoder
+from transformers.models.bert.modeling_bert import BertIntermediate, BertOutput, BertAttention, BertSelfAttention, BertConfig, BertEncoder
 from models.set_criterion import SetCriterion
 from DEE import transformer
+
+BertLayerNorm = torch.nn.LayerNorm
 
 class SetPred4DEE(nn.Module):
 
@@ -123,8 +125,11 @@ class SetPred4DEE(nn.Module):
         else:
             event_role_hidden_states = event_role_embed
 
+        # tzhu: event_role_hidden_states: (1, num_roles, hidden_size)
         if self.config.use_role_decoder:
+            # tzhu: pred_role_enc: (1, num_sets, num_roles, hidden_size)
             pred_role_enc = torch.repeat_interleave(event_role_hidden_states.unsqueeze(1), repeats=self.num_generated_sets, dim=1)
+            # tzhu: pred_set_role_enc: (num_sets, num_roles, hidden_size)
             pred_set_role_enc = self.event2role_decoder(pred_role_enc.squeeze(0), hidden_states.unsqueeze(2).squeeze(0), None, None)
             pred_set_role_tensor = self.metric_1(pred_set_role_enc.unsqueeze(2)) + self.metric_2(doc_span_sent_context).unsqueeze(1)
         else:

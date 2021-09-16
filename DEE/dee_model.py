@@ -106,10 +106,10 @@ class SetPre4DEEModel(nn.Module):
                         event_type2role_index.append(role2index[role_type])
                 self.event_type2role_index_list.append(event_type2role_index)
 
-        if ner_model is None:
-            self.ner_model = NERModel(config)
-        else:
-            self.ner_model = ner_model
+        # if ner_model is None:
+        #     self.ner_model = NERModel(config)
+        # else:
+        #     self.ner_model = ner_model
 
         self.ner_model = NERModel(config)
 

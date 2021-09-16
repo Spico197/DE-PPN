@@ -15,7 +15,8 @@ from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from torch.utils.data.distributed import DistributedSampler
 import torch.distributed as dist
 import torch.nn.parallel as para
-from pytorch_pretrained_bert.optimization import BertAdam
+# from pytorch_pretrained_bert.optimization import BertAdam
+# from transformers.models.bert import BertAdam
 from transformers import AdamW
 
 from tqdm import trange, tqdm

@@ -5,7 +5,7 @@
 import json
 import logging
 import pickle
-from pytorch_pretrained_bert import BertTokenizer
+from transformers.models.bert import BertTokenizer
 
 
 logger = logging.getLogger(__name__)
@@ -54,8 +54,8 @@ def set_basic_log_config():
 class BERTChineseCharacterTokenizer(BertTokenizer):
     """Customized tokenizer for Chinese financial announcements"""
 
-    def __init__(self, vocab_file, do_lower_case=True):
-        super(BERTChineseCharacterTokenizer, self).__init__(vocab_file, do_lower_case)
+    def __init__(self, vocab_file, do_lower_case=True, **kwargs):
+        super().__init__(vocab_file, do_lower_case, **kwargs)
 
     def char_tokenize(self, text, unk_token='[UNK]'):
         """perform pure character-based tokenization"""

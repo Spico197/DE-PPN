@@ -1,31 +1,55 @@
-# Parallel Prediction for Document-level Event Extraction
+<div align="center">
+  <h1>Parallel Prediction for Document-level Event Extraction</h1>
+  <a href="#overview">🧱 Overview</a> | <a href="#datasets">💾 Datasets</a> | <a href="#dependencies">🌴 Dependencies</a> | <a href="#quickstart">🚀 QuickStart</a> | <a href="#results">📋 Results</a> | <a href="#reference">💌 Reference</a>
+</div>
 
 
-Table of Contents
-=================
-  * [Overview](#overview)
-  * [Data](#data)
-  * [Reference](#reference)
+<h2 id="overview">🧱 Overview</h2>
 
-## Overview
 Code for the paper ["Document-level Event Extraction via Parallel Prediction Networks"](https://aclanthology.org/2021.acl-long.492/).
+
+This repo is built on the [official codes](https://github.com/HangYang-NLP/DE-PPN).
+The official codes are not available to run due to some missing codes, and I can't wait to have a try, so I complete the missing part and create this repo.
+
+This repo is still under construction, and the program is still running to reproduce the final results.
+Due to the time limit, codes are not totally refactored to be more elegant, but I will work on it.
+
+Please be aware that this is not a totally officially implementated version.
+If you find any problems, do not hesitate to drop me an issue, or reach me by email.
 
 <p align="center">
   <img src="./overview.png" alt="Photo" style="width="100%;"/>
 </p>
 
-## Dependencies 
-- pytorch=1.6 
-- transformers=3.1.0
-- tensorboardX
-- numpy
-- tqdm
+<h2 id="datasets">💾 Datasets</h2>
 
-## Datasets
 - ChFinAnn (Access from [https://github.com/dolphin-zs/Doc2EDAG/blob/master/Data.zip]. Data preprocessing, sentence-level extraction and evaluation metrics following Doc2EDAG[https://github.com/dolphin-zs/Doc2EDAG]).
 
-## Reference
+<h2 id="dependencies">🌴 Dependencies</h2>
+
+Python >= 3.7
+- pytorch=1.7.1
+- transformers=4.6.1
+- tensorboardX=2.4
+- numpy=1.20.3
+- scipy=1.7.1
+- tqdm=4.61.0
+
+<h2 id="quickstart">🚀 QuickStart</h2>
+
+Change `CUDA_VISIBLE_DEVICES` in `run.sh` and run:
+
+```bash
+$ nohup bash run.sh >deppn.log 2>&1 &
 ```
+
+<h2 id="results">📋 Results</h2>
+
+Still running ...
+
+<h2 id="reference">💌 Reference</h2>
+
+```bibtex
 @inproceedings{yang-etal-2021-document,
     title = "Document-level Event Extraction via Parallel Prediction Networks",
     author = "Yang, Hang  and
@@ -42,6 +66,5 @@ Code for the paper ["Document-level Event Extraction via Parallel Prediction Net
     url = "https://aclanthology.org/2021.acl-long.492",
     doi = "10.18653/v1/2021.acl-long.492",
     pages = "6298--6308",
-    abstract = "Document-level event extraction (DEE) is indispensable when events are described throughout a document. We argue that sentence-level extractors are ill-suited to the DEE task where event arguments always scatter across sentences and multiple events may co-exist in a document. It is a challenging task because it requires a holistic understanding of the document and an aggregated ability to assemble arguments across multiple sentences. In this paper, we propose an end-to-end model, which can extract structured events from a document in a parallel manner. Specifically, we first introduce a document-level encoder to obtain the document-aware representations. Then, a multi-granularity non-autoregressive decoder is used to generate events in parallel. Finally, to train the entire model, a matching loss function is proposed, which can bootstrap a global optimization. The empirical results on the widely used DEE dataset show that our approach significantly outperforms current state-of-the-art methods in the challenging DEE task. Code will be available at https://github.com/HangYang-NLP/DE-PPN.",
 }
 ```

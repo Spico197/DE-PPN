@@ -1,7 +1,9 @@
+import torch
 import torch.nn as nn
-import torch, math
-from models.matcher import HungarianMatcher
 import torch.nn.functional as F
+
+from models.matcher import HungarianMatcher
+
 
 class SetCriterion(nn.Module):
     """ This class computes the loss for Set_RE.
@@ -43,10 +45,7 @@ class SetCriterion(nn.Module):
         losses = self.get_role_loss(outputs, targets, indices_tensor)
         return losses
 
-
-
     def get_role_loss(self, outputs, targets, indices_tensor):
-
         num_sets, num_roles, num_entities = outputs["pred_role_logits"].size()
 
         pred_event = outputs["pred_doc_event_logps"].softmax(-1)
