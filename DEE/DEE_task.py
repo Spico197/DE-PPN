@@ -14,16 +14,17 @@ from .utils import BERTChineseCharacterTokenizer, default_dump_json, default_loa
 from .ner_model_transformer import BertForBasicNER
 from .base_task import TaskSetting, BasePytorchTask
 from .event_type import event_type_fields_list
+from .dee_helper import measure_dee_prediction
 from .dee_model import SetPre4DEEModel
 
 
 class DEETaskSetting(TaskSetting):
     base_key_attrs = TaskSetting.base_key_attrs
     base_attr_default_pairs = [
-        # ('train_file_name', 'train.json'),
-        # ('dev_file_name', 'dev.json'),
-        # ('test_file_name', 'test.json'),
-        ('train_file_name', 'dev.json'),
+        # ('train_file_name', 'sample_500.json'),
+        # ('dev_file_name', 'sample_500.json'),
+        # ('test_file_name', 'sample_500.json'),
+        ('train_file_name', 'train.json'),
         ('dev_file_name', 'dev.json'),
         ('test_file_name', 'test.json'),
         ('summary_dir_name', '/tmp/Summary'),
@@ -341,20 +342,22 @@ class DEETask(BasePytorchTask):
         total_event_decode_results, total_eval_res = self.eval(features, dataset, use_gold_span=gold_span_flag, heuristic_type=heuristic_type,
                   dump_decode_pkl_name=decode_dump_name, dump_eval_json_name=eval_dump_name, eval_process = resume_cpt_flag)
         test_result_dict = total_eval_res
-        self.logging('Test F1-score-\t all {}'.format(test_result_dict))
+        self.logging('{} F1-score-\t all {}'.format(data_type, test_result_dict[-1]))
 
-        decode_dump_name = decode_dump_template.format(data_type == 'dev', span_str, model_str, start_epoch)
-        eval_dump_name = eval_dump_template.format(data_type == 'dev', span_str, model_str, start_epoch)
+        decode_dump_name = decode_dump_template.format('dev', span_str, model_str, start_epoch)
+        eval_dump_name = eval_dump_template.format('dev', span_str, model_str, start_epoch)
         total_event_decode_results, total_eval_res = self.eval(self.dev_features, self.dev_dataset, use_gold_span=gold_span_flag, heuristic_type=heuristic_type,
                   dump_decode_pkl_name=decode_dump_name, dump_eval_json_name=eval_dump_name, eval_process = resume_cpt_flag)
         dev_result_dict = total_eval_res
-        self.logging('Dev F1-score-\t all {}'.format(dev_result_dict))
-        single_f1, multi_f1, average = test_result_dict['all_type_result'].values()
+        self.logging('Dev F1-score-\t all {}'.format(dev_result_dict[-1]))
+
+        # single_f1, multi_f1, average = test_result_dict['all_type_result'].values()
+        micro_f1 = dev_result_dict[-1]['MicroF1']
 
         start_epoch = self.setting.start_epoch
-        if self.is_master_node() and save_cpt_flag and multi_f1 > self.best_f1_multi:
+        if self.is_master_node() and save_cpt_flag and micro_f1 > self.best_micro_f1:
             self.save_cpt_at(start_epoch)
-            self.best_f1_multi = multi_f1
+            self.best_micro_f1 = micro_f1
 
         if not resume_cpt_flag:
             self.logging('save path\t {}'.format(start_epoch))
@@ -365,7 +368,6 @@ class DEETask(BasePytorchTask):
                 'total_eval': test_result_dict
             }
             default_dump_result_json(result_dict, eval_result_file_path)
-
 
     def save_cpt_at(self, epoch):
         self.save_checkpoint(cpt_file_name='{}.cpt.{}'.format(self.setting.cpt_file_name, epoch), epoch=epoch)
@@ -420,8 +422,12 @@ class DEETask(BasePytorchTask):
         else:
             dump_eval_json_path = None
 
+        total_eval_res = measure_dee_prediction(
+            self.event_type_fields_pairs, features, total_event_decode_results,
+            dump_json_path=dump_eval_json_path
+        )
 
-
+        return total_event_decode_results, total_eval_res
 
     def reevaluate_dee_prediction(self, target_file_pre='dee_eval', target_file_suffix='.pkl',
                                   dump_flag=False):

@@ -1,6 +1,6 @@
 <div align="center">
-  <h1>Parallel Prediction for Document-level Event Extraction</h1>
-  <a href="#overview">🧱 Overview</a> | <a href="#datasets">💾 Datasets</a> | <a href="#dependencies">🌴 Dependencies</a> | <a href="#quickstart">🚀 QuickStart</a> | <a href="#results">📋 Results</a> | <a href="#reference">💌 Reference</a>
+  <h1>Document-level Event Extraction via Parallel Prediction Networks</h1>
+  <a href="#overview">🧱 Overview</a> | <a href="#datasets">💾 Datasets</a> | <a href="#dependencies">🌴 Dependencies</a> | <a href="#quickstart">🚀 QuickStart</a> | <a href="#implementation-detail">🔍 Implementation Details</a> | <a href="#results">📋 Results</a> | <a href="#reference">💌 Reference</a>
 </div>
 
 
@@ -18,12 +18,13 @@ Please be aware that this is not a totally officially implementated version.
 If you find any problems, do not hesitate to drop me an issue, or reach me by email.
 
 <p align="center">
-  <img src="./overview.png" alt="Photo" style="width="100%;"/>
+  <img src="./overview.png" alt="Photo" style="width=100%;">
 </p>
 
 <h2 id="datasets">💾 Datasets</h2>
 
-- ChFinAnn (Access from [https://github.com/dolphin-zs/Doc2EDAG/blob/master/Data.zip]. Data preprocessing, sentence-level extraction and evaluation metrics following Doc2EDAG[https://github.com/dolphin-zs/Doc2EDAG]).
+`ChFinAnn` is downloaded from [Here](https://github.com/dolphin-zs/Doc2EDAG/blob/master/Data.zip).
+Data preprocessing, sentence-level extraction and evaluation metrics follow [Doc2EDAG](https://github.com/dolphin-zs/Doc2EDAG).
 
 <h2 id="dependencies">🌴 Dependencies</h2>
 
@@ -42,6 +43,16 @@ Change `CUDA_VISIBLE_DEVICES` in `run.sh` and run:
 ```bash
 $ nohup bash run.sh >deppn.log 2>&1 &
 ```
+
+<h2 id="implementation-detail">🔍 Implementation Details</h2>
+
+**Q:** How to construct the golden targets?
+- In `DEEFeature.extract_predicted_instances`, records with **all** `None` arguments are labelled as `0` (NULL event).
+- For arguments, the last entity (`role4None_embed`) represents `NULL` entity and is used as a role placeholder.
+
+**Q:** How to select the best checkpoint?
+- I follow the Doc2EDAG and use the MicroF1 on development set as the best model selection criteria.
+
 
 <h2 id="results">📋 Results</h2>
 

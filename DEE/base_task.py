@@ -175,6 +175,7 @@ class BasePytorchTask(object):
         self.model_save_path = "params_pledge.pkl"
         self.load_model = True
 
+        self.best_micro_f1 = -0.0
 
     def logging(self, msg, level=logging.INFO):
         if self.in_distributed_mode():
@@ -695,6 +696,8 @@ class BasePytorchTask(object):
         if epoch:
             store_dict['epoch'] = epoch
 
+        store_dict['best_micro_f1'] = self.best_micro_f1
+
         torch.save(store_dict, cpt_file_path)
 
     def resume_checkpoint(self, cpt_file_path=None, cpt_file_name=None,
@@ -749,6 +752,7 @@ class BasePytorchTask(object):
         else:
             self.logging('Do not resume optimizer')
 
+        self.best_micro_f1 = store_dict['best_micro_f1']
 
 def average_gradients(model):
     """ Gradient averaging. """

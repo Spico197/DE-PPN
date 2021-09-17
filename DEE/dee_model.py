@@ -441,15 +441,53 @@ class SetPre4DEEModel(nn.Module):
                 doc_span_info, event_idx2event_decode_paths
 
         batch_span_context = torch.cat(span_context_list, dim=0)
-        event_pred_list = self.get_event_cls_info(doc_sent_context, doc_fea, train_flag=True)
+        len_spans = batch_span_context.shape[0]
+        event_pred_list = self.get_event_cls_info(doc_sent_context, doc_fea, train_flag=False)
+
+        event_idx2obj_idx2field_idx2token_tup = []
+        event_idx2event_decode_paths = []
         for event_idx, event_pred in enumerate(event_pred_list):
-            if event_pred != 0:
+            if event_pred == 0:
+                event_idx2obj_idx2field_idx2token_tup.append(None)
+                event_idx2event_decode_paths.append(None)
+            else:
                 outputs, targets = self.Setpred4DEE(doc_sent_context, batch_span_context, doc_span_info, event_idx, train_flag=False)
+                # tzhu: pred_event: (num_sets,)
                 pred_event = outputs["pred_doc_event_logps"].softmax(-1).argmax(-1)  # [num_sets,event_types]
+                # tzhu: pred_role: (num_sets, num_roles)
                 pred_role = outputs["pred_role_logits"].softmax(-1).argmax(-1)  # [num_sets,num_roles,num_etities]
-                gold_event = event_type_idxs_list[event_idx]  # tzhu: event-specific slice
-                gold_role = event_arg_idxs_objs_list[event_idx]  # tzhu: event-specific slice
-                return pred_event, gold_event, pred_role, gold_role, len(span_context_list)
+                obj_idx2field_idx2token_tup = self.build_arg_obj(pred_event, pred_role, len_spans, doc_span_info)
+                if len(obj_idx2field_idx2token_tup) < 1:
+                    event_idx2obj_idx2field_idx2token_tup.append(None)
+                    event_idx2event_decode_paths.append(None)
+                else:
+                    event_idx2obj_idx2field_idx2token_tup.append(obj_idx2field_idx2token_tup)
+                    event_idx2event_decode_paths.append(None)
+                # gold_event = event_type_idxs_list[event_idx]  # tzhu: event-specific slice
+                # gold_role = event_arg_idxs_objs_list[event_idx]  # tzhu: event-specific slice
+                # return pred_event, gold_event, pred_role, gold_role, len(span_context_list)
+        return doc_fea.ex_idx, event_pred_list, event_idx2obj_idx2field_idx2token_tup, doc_span_info, event_idx2event_decode_paths
+
+    def build_arg_obj(self, pred_event_flags, pred_role_args, len_spans, doc_span_info):
+        """
+        tzhu: recover event_idx2obj_idx2field_idx2token_tup
+
+        Args:
+            len_spans: number of entities without NULL entity
+        """
+        objs = []
+        for ok_flag, args in zip(pred_event_flags, pred_role_args):
+            # if the record is not recognised as NULL
+            if ok_flag:
+                arg_list = []
+                for role_idx, arg in enumerate(args):
+                    if arg < len_spans:
+                        token_tup = doc_span_info.span_token_tup_list[arg]
+                        arg_list.append(token_tup)
+                    else:
+                        arg_list.append(None)
+                objs.append(arg_list)
+        return objs
 
     def adjust_token_label(self, doc_token_labels_list):
         if self.config.use_token_role:  # do not use detailed token
