@@ -9,7 +9,9 @@
 Code for the paper ["Document-level Event Extraction via Parallel Prediction Networks"](https://aclanthology.org/2021.acl-long.492/).
 
 This repo is built on the [official codes](https://github.com/HangYang-NLP/DE-PPN).
-The official codes are not available to run due to some missing codes, and I can't wait to have a try, so I complete the missing part and create this repo.
+The official codes are not available to run due to some bugs.
+There are many important details and codes missing from the official repo.
+I can't wait to have a try and test the performance, so I complete the missing part and create this repo.
 
 This repo is still under construction, and the program is still running to reproduce the final results.
 Due to the time limit, codes are not totally refactored to be more elegant, but I will work on it.
@@ -57,6 +59,173 @@ $ nohup bash run.sh >deppn.log 2>&1 &
 <h2 id="results">📋 Results</h2>
 
 Still running ...
+
+The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN` is our reproduced results.
+
+- Speed
+
+| Model  | Train (min/epoch) | Inference (docs/s) | Total Training Process (hours) |
+| :----- | ----------------: | -----------------: | -----------------------------: |
+| DE-PPN |                   |                    |                                |
+
+- Main Results
+
+<table>
+<thead>
+  <tr>
+    <th rowspan="2">Models</th>
+    <th colspan="3">EF</th>
+    <th colspan="3">ER</th>
+    <th colspan="3">EU</th>
+    <th colspan="3">EO</th>
+    <th colspan="3">EP</th>
+    <th colspan="3">Overall Macro</th>
+    <th colspan="3">Overall Micro</th>
+  </tr>
+  <tr>
+    <th>P</th>
+    <th>R</th>
+    <th>F1</th>
+    <th>P</th>
+    <th>R</th>
+    <th>F1</th>
+    <th>P</th>
+    <th>R</th>
+    <th>F1</th>
+    <th>P</th>
+    <th>R</th>
+    <th>F1</th>
+    <th>P</th>
+    <th>R</th>
+    <th>F1</th>
+    <th>P</th>
+    <th>R</th>
+    <th>F1</th>
+    <th>P</th>
+    <th>R</th>
+    <th>F1</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Doc2EDAG</td>
+    <td>77.1</td>
+    <td>64.5</td>
+    <td>70.2</td>
+    <td>91.3</td>
+    <td>83.6</td>
+    <td>87.3</td>
+    <td>80.2</td>
+    <td>65.0</td>
+    <td>71.8</td>
+    <td>82.1</td>
+    <td>69.0</td>
+    <td>75.0</td>
+    <td>80.0</td>
+    <td>74.8</td>
+    <td>77.3</td>
+    <td></td>
+    <td></td>
+    <td>76.3</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>DE-PPN</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</tbody>
+</table>
+
+- S. & M. Results
+
+<table>
+<thead>
+  <tr>
+    <th rowspan="2">Models</th>
+    <th colspan="2">EF</th>
+    <th colspan="2">ER</th>
+    <th colspan="2">EU</th>
+    <th colspan="2">EO</th>
+    <th colspan="2">EP</th>
+    <th colspan="2">Overall Macro</th>
+    <th colspan="2">Overall Micro</th>
+  </tr>
+  <tr>
+    <th>S.</th>
+    <th>M.</th>
+    <th>S.</th>
+    <th>M.</th>
+    <th>S.</th>
+    <th>M.</th>
+    <th>S.</th>
+    <th>M.</th>
+    <th>S.</th>
+    <th>M.</th>
+    <th>S.</th>
+    <th>M.</th>
+    <th>S.</th>
+    <th>M.</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>Doc2EDAG</td>
+    <td>80.0</td>
+    <td>61.3</td>
+    <td>89.4</td>
+    <td>68.4</td>
+    <td>77.4</td>
+    <td>64.6</td>
+    <td>79.4</td>
+    <td>69.5</td>
+    <td>85.5</td>
+    <td>72.5</td>
+    <td>82.3</td>
+    <td>67.3</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>DE-PPN</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</tbody>
+</table>
 
 <h2 id="reference">💌 Reference</h2>
 
