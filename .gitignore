@@ -3,3 +3,5 @@ __pycache__/
 Data/*.json
 Exps/
 !Data/sample_500.json
+debug.py
+Logs/

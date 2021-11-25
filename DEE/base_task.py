@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-# AUTHOR: Hang Yang
-# DATE: 21-7-11
 # Code Reference: pytorch-pretrained-bert (https://github.com/huggingface/pytorch-transformers)
 
 import logging
@@ -384,15 +381,37 @@ class BasePytorchTask(object):
                                       for n, param in self.model.named_parameters()]
         else:
             model_named_parameters = list(self.model.named_parameters())
-        no_decay = ['bias', 'gamma', 'beta']
+
+        def get_no_decay_flag(name):
+            for nd in ['bias', 'gamma', 'beta']:
+                if nd in name:
+                    return True
+            return False
+
+        common_lr = self.setting.learning_rate
+        decoder_lr = self.setting.decoder_lr
+        def get_decode_lr_flag(name):
+            for dn in ['event2role_decoder', 'role_layers', 'set_layers']:
+                if dn in name:
+                    return True
+            return False
+
         optimizer_grouped_parameters = [
             {
-                'params': [p for n, p in model_named_parameters if n not in no_decay],
-                'weight_decay_rate': 0.01
+                'params': [p for n, p in model_named_parameters if not get_no_decay_flag(n) and not get_decode_lr_flag(n)],
+                'weight_decay_rate': 0.01, 'lr': common_lr
             },
             {
-                'params': [p for n, p in model_named_parameters if n in no_decay],
-                'weight_decay_rate': 0.0
+                'params': [p for n, p in model_named_parameters if get_no_decay_flag(n) and not get_decode_lr_flag(n)],
+                'weight_decay_rate': 0.0, 'lr': common_lr
+            },
+            {
+                'params': [p for n, p in model_named_parameters if not get_no_decay_flag(n) and get_decode_lr_flag(n)],
+                'weight_decay_rate': 0.01, 'lr': decoder_lr
+            },
+            {
+                'params': [p for n, p in model_named_parameters if get_no_decay_flag(n) and get_decode_lr_flag(n)],
+                'weight_decay_rate': 0.0, 'lr': decoder_lr
             }
         ]
 
@@ -405,7 +424,7 @@ class BasePytorchTask(object):
         #                      lr=self.setting.learning_rate,
         #                      warmup=self.setting.warmup_proportion,
         #                      t_total=num_train_steps)
-        optimizer = AdamW(optimizer_grouped_parameters, lr=self.setting.learning_rate)
+        optimizer = AdamW(optimizer_grouped_parameters)
         # optimizer = RAdam(optimizer_grouped_parameters, lr=self.setting.learning_rate)
 
         return optimizer, num_train_steps, model_named_parameters

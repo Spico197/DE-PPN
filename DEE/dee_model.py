@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-# AUTHOR: Hang Yang
-# DATE: 21-7-11
 # part of code reference: pytorch-pretrained-bert (https://github.com/dolphin-zs/Doc2EDAG/blob/master/dee/dee_model.py)
 
 
@@ -396,7 +393,7 @@ class SetPre4DEEModel(nn.Module):
         event_type_list = doc_fea.event_type_labels
         for event_idx, event_type in enumerate(event_type_list):
             if event_type != 0:
-                set_pred_loss, outputs = self.Setpred4DEE(doc_sent_context, batch_span_context, doc_span_info, event_idx,train_flag = True)
+                set_pred_loss, _ = self.Setpred4DEE(doc_sent_context, batch_span_context, doc_span_info, event_idx, train_flag = True)
                 event_set_pred_loss += set_pred_loss
         return event_set_pred_loss, event_cls_loss
 
@@ -425,8 +422,8 @@ class SetPre4DEEModel(nn.Module):
         span_context_list, doc_sent_context = self.get_doc_span_sent_context(
             doc_token_emb, doc_sent_emb, doc_fea, doc_span_info
         )
-        event_arg_idxs_objs_list = doc_span_info.pred_event_arg_idxs_objs_list
-        event_type_idxs_list = doc_span_info.pred_event_type_idxs_list
+        # event_arg_idxs_objs_list = doc_span_info.pred_event_arg_idxs_objs_list
+        # event_type_idxs_list = doc_span_info.pred_event_type_idxs_list
 
         if len(span_context_list) == 0:
             event_pred_list = []
@@ -444,6 +441,15 @@ class SetPre4DEEModel(nn.Module):
         len_spans = batch_span_context.shape[0]
         event_pred_list = self.get_event_cls_info(doc_sent_context, doc_fea, train_flag=False)
 
+        # pred_event_list = []
+        # for event_idx, event_pred in enumerate(event_pred_list):
+        #     if event_pred != 0:
+        #         outputs, _ = self.Setpred4DEE(doc_sent_context, batch_span_context, doc_span_info, event_idx, train_flag=False)
+        #         pred_event = outputs["pred_doc_event_logps"].softmax(-1).argmax(-1)  # [num_sets,event_types]
+        #         pred_role = outputs["pred_role_logits"].softmax(-1).argmax(-1)  # [num_sets,num_roles,num_etities]
+        #         pred_event_list.append([event_idx, pred_event, pred_role])
+        # return pred_event_list
+
         event_idx2obj_idx2field_idx2token_tup = []
         event_idx2event_decode_paths = []
         for event_idx, event_pred in enumerate(event_pred_list):
@@ -451,7 +457,7 @@ class SetPre4DEEModel(nn.Module):
                 event_idx2obj_idx2field_idx2token_tup.append(None)
                 event_idx2event_decode_paths.append(None)
             else:
-                outputs, targets = self.Setpred4DEE(doc_sent_context, batch_span_context, doc_span_info, event_idx, train_flag=False)
+                outputs, _ = self.Setpred4DEE(doc_sent_context, batch_span_context, doc_span_info, event_idx, train_flag=False)
                 # tzhu: pred_event: (num_sets,)
                 pred_event = outputs["pred_doc_event_logps"].softmax(-1).argmax(-1)  # [num_sets,event_types]
                 # tzhu: pred_role: (num_sets, num_roles)

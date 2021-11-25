@@ -56,7 +56,7 @@ class SetPred4DEE(nn.Module):
 
         if self.config.use_role_decoder:
             self.event2role_decoder = transformer.make_transformer_decoder(
-                config.num_tf_layers, config.hidden_size, ff_size=config.ff_size, dropout=config.dropout
+                config.num_event2role_decoder_layer, config.hidden_size, ff_size=config.ff_size, dropout=config.dropout
             )
 
     def forward(self, doc_sent_context, batch_span_context, doc_span_info, event_type_pred = None, train_flag = True):
@@ -102,8 +102,18 @@ class SetPred4DEE(nn.Module):
 
         ### event type classification (no-None or None)
         pred_doc_event_logps = self.event_cls(hidden_states).squeeze(0)
-        event_type_idxs_list = doc_span_info.pred_event_type_idxs_list[event_type_pred][:self.num_generated_sets]  # tzhu: event-specific slice
-        event_arg_idxs_objs_list = doc_span_info.pred_event_arg_idxs_objs_list[event_type_pred][:self.num_generated_sets]  # tzhu: event-specific slice
+        # event_type_idxs_list = doc_span_info.pred_event_type_idxs_list[event_type_pred][:self.num_generated_sets]
+        # event_arg_idxs_objs_list = doc_span_info.pred_event_arg_idxs_objs_list[event_type_pred][:self.num_generated_sets]
+
+        doc_event_label = doc_span_info.pred_event_type_idxs_list[event_type_pred]
+        if isinstance(doc_event_label, int):
+            doc_event_label = [doc_event_label]
+        doc_event_label = doc_event_label[:self.num_generated_sets]
+
+        role_label = doc_span_info.pred_event_arg_idxs_objs_list[event_type_pred]
+        if role_label is not None:
+            role_label = role_label[:self.num_generated_sets]
+
         event_index2role_list = [self.event_type2role_index_list[event_type_pred]]
         event_index2role_index_tensor = torch.tensor(event_index2role_list, dtype=torch.long, requires_grad=False).to(self.device)
         num_roles = len(event_index2role_list[0])
@@ -116,9 +126,9 @@ class SetPred4DEE(nn.Module):
                 if self.return_intermediate:
                     all_hidden_states = all_hidden_states + (event_role_embed,)
                 layer_outputs = layer_module(
-                # event_role_embed, doc_sent_context
-                event_role_embed, batch_span_context
-                # event_role_embed, doc_span_sent_context
+                    # event_role_embed, doc_sent_context
+                    event_role_embed, batch_span_context
+                    # event_role_embed, doc_span_sent_context
                 )
                 event_role_hidden_states = layer_outputs[0]
         else:
@@ -139,7 +149,8 @@ class SetPred4DEE(nn.Module):
         pred_role_logits = pred_role_logits.view(self.num_generated_sets, num_roles, -1) # [num_sets, num_roles, num_entities]
         pred_role_logits = pred_role_logits[:,:,:num_pred_entities]
         outputs = {'pred_doc_event_logps': pred_doc_event_logps,'pred_role_logits': pred_role_logits}
-        targets = {'doc_event_label': event_type_idxs_list,'role_label': event_arg_idxs_objs_list}
+        targets = {'doc_event_label': doc_event_label,'role_label': role_label}
+        # targets = {'doc_event_label': event_type_idxs_list,'role_label': event_arg_idxs_objs_list}
 
         if train_flag:
             loss = self.criterion(outputs, targets)

@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-# AUTHOR: Shun Zheng
-# DATE: 19-9-19
-
 import logging
 import os
 import re
@@ -137,9 +133,11 @@ class DEEExample(object):
 
 
 class DEEExampleLoader(object):
-    def __init__(self, rearrange_sent_flag, max_sent_len):
+    def __init__(self, rearrange_sent_flag, max_sent_len, train_on_multi_events, train_on_single_event):
         self.rearrange_sent_flag = rearrange_sent_flag
         self.max_sent_len = max_sent_len
+        self.train_on_multi_events = train_on_multi_events
+        self.train_on_single_event = train_on_single_event
 
     def rearrange_sent_info(self, detail_align_info):
         if 'ann_valid_dranges' not in detail_align_info:
@@ -244,13 +242,39 @@ class DEEExampleLoader(object):
 
     def __call__(self, dataset_json_path):
         total_dee_examples = []
-        annguid_aligninfo_list = default_load_json(dataset_json_path)
+        annguid_aligninfo_list = default_load_json(dataset_json_path)[:]
+        multi_events_id = 0
+        if self.train_on_multi_events:
+            multi_events_id = 1
+
+        event_num_dict = {
+            '1':0,
+            '2':0,
+            '3':0,
+            '4':0,
+            '5':0,
+        }
         for annguid, detail_align_info in annguid_aligninfo_list:
             # if self.rearrange_sent_flag:
             #     detail_align_info = self.rearrange_sent_info(detail_align_info)
             # dee_example = DEEExample(annguid, detail_align_info)
-            dee_example = self.convert_dict_to_example(annguid, detail_align_info)
-            total_dee_examples.append(dee_example)
+            recguid_eventname_eventdict_list = detail_align_info['recguid_eventname_eventdict_list']
+            event_type_list = [event[1] for event in recguid_eventname_eventdict_list]
+            event_num = len(recguid_eventname_eventdict_list)
+            if event_num < 5:
+                event_num_dict[str(event_num)] += 1
+            else:
+                event_num_dict['5'] += 1
+
+            if self.train_on_single_event:
+                if len(recguid_eventname_eventdict_list) == 1:
+                    dee_example = self.convert_dict_to_example(annguid, detail_align_info)
+                    total_dee_examples.append(dee_example)
+
+            if self.train_on_multi_events:
+                if len(recguid_eventname_eventdict_list) > multi_events_id:
+                    dee_example = self.convert_dict_to_example(annguid, detail_align_info)
+                    total_dee_examples.append(dee_example)
 
         return total_dee_examples
 
@@ -296,30 +320,34 @@ class DEEFeature(object):
         self.event_idx2key_sent_idx_set, self.doc_sent_labels = self.build_key_event_sent_info()
 
     def generate_dag_info_for(self, pred_span_token_tup_list, return_miss=False):
+        '''
+        :param pred_span_token_tup_list:  entity span token id (pred or gold)
+        '''
+        num_pred_span = len(pred_span_token_tup_list)
         token_tup2pred_span_idx = {
             token_tup: pred_span_idx for pred_span_idx, token_tup in enumerate(pred_span_token_tup_list)
         }
         gold_span_idx2pred_span_idx = {}
-        # pred_span_idx2gold_span_idx = {}
         missed_span_idx_list = []  # in terms of self
         missed_sent_idx_list = []  # in terms of self
         for gold_span_idx, token_tup in enumerate(self.span_token_ids_list):
             if token_tup in token_tup2pred_span_idx:
                 pred_span_idx = token_tup2pred_span_idx[token_tup]
                 gold_span_idx2pred_span_idx[gold_span_idx] = pred_span_idx
-                # pred_span_idx2gold_span_idx[pred_span_idx] = gold_span_idx
             else:
                 missed_span_idx_list.append(gold_span_idx)
                 for gold_drange in self.span_dranges_list[gold_span_idx]:
                     missed_sent_idx_list.append(gold_drange[0])
-        missed_sent_idx_list = list(set(missed_sent_idx_list))
-
-        pred_event_arg_idxs_objs_list = []
-        for event_arg_idxs_objs in self.event_arg_idxs_objs_list:
+        pred_event_arg_idxs_objs_lists = []
+        pred_event_type_idxs_lists = []
+        # one_event_type = False
+        for i, (event_arg_idxs_objs, event_type_idxs) in enumerate(zip(self.event_arg_idxs_objs_list, self.event_type_labels)):
             if event_arg_idxs_objs is None:
-                pred_event_arg_idxs_objs_list.append(None)
+                pred_event_arg_idxs_objs_lists.append(event_arg_idxs_objs)
+                pred_event_type_idxs_lists.append(list((event_type_idxs,)))
             else:
-                pred_event_arg_idxs_objs = []
+                pred_event_arg_idxs_objs_list = []
+                pred_event_type_idxs_list = []
                 for event_arg_idxs in event_arg_idxs_objs:
                     pred_event_arg_idxs = []
                     for gold_span_idx in event_arg_idxs:
@@ -328,23 +356,48 @@ class DEEFeature(object):
                                 gold_span_idx2pred_span_idx[gold_span_idx]
                             )
                         else:
-                            pred_event_arg_idxs.append(None)
+                            pred_event_arg_idxs.append(num_pred_span)
+                    pred_event_type_idxs_list.append(i)
+                    pred_event_arg_idxs_objs_list.append(tuple(pred_event_arg_idxs))
+                pred_event_type_idxs_lists.append(pred_event_type_idxs_list)
+                pred_event_arg_idxs_objs_lists.append(pred_event_arg_idxs_objs_list)
+        # pred_event_type_idxs_list = pred_event_type_idxs_list[:self.num_generated_triplets]
+        # pred_event_arg_idxs_objs_list = pred_event_arg_idxs_objs_list[:self.num_generated_triplets]
+        return gold_span_idx2pred_span_idx, pred_event_arg_idxs_objs_lists, pred_event_type_idxs_lists
 
-                    pred_event_arg_idxs_objs.append(tuple(pred_event_arg_idxs))
-                pred_event_arg_idxs_objs_list.append(pred_event_arg_idxs_objs)
+        # missed_sent_idx_list = list(set(missed_sent_idx_list))
 
-        # event_idx -> field_idx -> pre_path -> cur_span_idx_set
-        # pred_dag_info = self.build_dag_info(pred_event_arg_idxs_objs_list)
+        # pred_event_arg_idxs_objs_list = []
+        # for event_arg_idxs_objs in self.event_arg_idxs_objs_list:
+        #     if event_arg_idxs_objs is None:
+        #         pred_event_arg_idxs_objs_list.append(None)
+        #     else:
+        #         pred_event_arg_idxs_objs = []
+        #         for event_arg_idxs in event_arg_idxs_objs:
+        #             pred_event_arg_idxs = []
+        #             for gold_span_idx in event_arg_idxs:
+        #                 if gold_span_idx in gold_span_idx2pred_span_idx:
+        #                     pred_event_arg_idxs.append(
+        #                         gold_span_idx2pred_span_idx[gold_span_idx]
+        #                     )
+        #                 else:
+        #                     pred_event_arg_idxs.append(None)
 
-        non_ent_idx = len(pred_span_token_tup_list) - 1
-        pred_instances, pred_event_validation_flags = self.extract_predicted_instances(pred_event_arg_idxs_objs_list, non_ent_idx)
+        #             pred_event_arg_idxs_objs.append(tuple(pred_event_arg_idxs))
+        #         pred_event_arg_idxs_objs_list.append(pred_event_arg_idxs_objs)
 
-        if return_miss:
-            # return pred_dag_info, missed_span_idx_list, missed_sent_idx_list
-            return gold_span_idx2pred_span_idx, pred_instances, pred_event_validation_flags
-        else:
-            # return pred_dag_info
-            return gold_span_idx2pred_span_idx
+        # # event_idx -> field_idx -> pre_path -> cur_span_idx_set
+        # # pred_dag_info = self.build_dag_info(pred_event_arg_idxs_objs_list)
+
+        # non_ent_idx = len(pred_span_token_tup_list) - 1
+        # pred_instances, pred_event_validation_flags = self.extract_predicted_instances(pred_event_arg_idxs_objs_list, non_ent_idx)
+
+        # if return_miss:
+        #     # return pred_dag_info, missed_span_idx_list, missed_sent_idx_list
+        #     return gold_span_idx2pred_span_idx, pred_instances, pred_event_validation_flags
+        # else:
+        #     # return pred_dag_info
+        #     return gold_span_idx2pred_span_idx
 
     def extract_predicted_instances(self, pred_event_arg_idxs_objs_list, non_ent_idx):
         validation_flags = [list() for _ in range(len(event_type_fields_list))]
@@ -500,10 +553,12 @@ class DEEFeatureConverter(object):
         self.event_type2index = {}
         self.event_type_list = []
         self.event_fields_list = []
+        self.event_type2num = {}
         for event_idx, (event_type, event_fields) in enumerate(self.event_type_fields_pairs):
             self.event_type2index[event_type] = event_idx
             self.event_type_list.append(event_type)
             self.event_fields_list.append(event_fields)
+            self.event_type2num[event_type] = 0
 
     def convert_example_to_feature(self, ex_idx, dee_example, log_flag=False):
         annguid = dee_example.guid
@@ -615,6 +670,7 @@ class DEEFeatureConverter(object):
                 if event_arg_idxs_objs:
                     event_type_labels.append(1)
                     event_arg_idxs_objs_list.append(event_arg_idxs_objs)
+                    self.event_type2num[event_type] += 1
                 else:
                     event_type_labels.append(0)
                     event_arg_idxs_objs_list.append(None)
@@ -651,6 +707,7 @@ class DEEFeatureConverter(object):
             len(dee_examples), remove_ex_cnt,
             self.truncate_doc_count, self.ner_fea_converter.truncate_count, self.truncate_span_count
         ))
+        print(self.event_type2num)
 
         return dee_features
 
@@ -731,10 +788,12 @@ def aggregate_task_eval_info(eval_dir_path, target_file_pre='dee_eval', target_f
             epoch_res_list = model_str2epoch_res_list[model_str]
 
             epoch = int(epoch)
-            fp = os.path.join(eval_dir_path, fn)
-            eval_res = default_load_json(fp)
-
-            epoch_res_list.append((epoch, eval_res))
+            try:
+                fp = os.path.join(eval_dir_path, fn)
+                eval_res = default_load_json(fp)
+                epoch_res_list.append((epoch, eval_res))
+            except:
+                breakpoint()
 
     for data_span_type, model_str2epoch_res_list in data_span_type2model_str2epoch_res_list.items():
         for model_str, epoch_res_list in model_str2epoch_res_list.items():

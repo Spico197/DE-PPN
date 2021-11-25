@@ -53,8 +53,7 @@ class HungarianMatcher(nn.Module):
         role_cost_tensor = torch.stack(cost_list)
         role_cost_tensor = role_cost_tensor.transpose(1,0)
         role_cost_tensor = role_cost_tensor.view(num_sets, num_roles, -1)
-        role_cost = torch.sum(role_cost_tensor, dim = 1)
-
+        role_cost = torch.sum(role_cost_tensor, dim=1)
         all_cost = role_cost + event_type_cost
         # all_cost = role_cost
 

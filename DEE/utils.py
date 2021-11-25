@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-# AUTHOR: Hang Yang
-# DATE: 21-7-11
-
 import json
 import logging
 import pickle
@@ -19,14 +15,14 @@ def default_load_json(json_file_path, encoding='utf-8', **kwargs):
     return tmp_json
 
 def default_dump_result_json(obj, json_file_path, encoding='utf-8', ensure_ascii=False, indent=2, **kwargs):
-    with open(json_file_path, 'a', encoding=encoding) as fout:
+    with open(json_file_path, 'w', encoding=encoding) as fout:
         json.dump(obj, fout,
                   ensure_ascii=ensure_ascii,
                   indent=indent,
                   **kwargs)
 
 def default_dump_json(obj, json_file_path, encoding='utf-8', ensure_ascii=False, indent=2, **kwargs):
-    with open(json_file_path, 'a', encoding=encoding) as fout:
+    with open(json_file_path, 'w', encoding=encoding) as fout:
         json.dump(obj, fout,
                   ensure_ascii=ensure_ascii,
                   indent=indent,

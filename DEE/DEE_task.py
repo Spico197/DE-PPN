@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-# AUTHOR: Hang Yang
-# DATE: 21-7-11
-
 import logging
 import os
 import torch.distributed as dist
@@ -53,7 +49,7 @@ class DEETaskSetting(TaskSetting):
         ('loss_lambda_1', 0.1),  # the proportion of ner loss
         ('loss_lambda_2', 0.4),  # the proportion of ner loss
         ('loss_lambda_3', 0.5),  # the proportion of ner loss
-
+        ('decoder_lr', 2e-5),  # learning rate of decoder
         ('loss_gamma', 1.0),  # the scaling proportion of missed span sentence ner loss
         ('add_greedy_dec', False),  # whether to add additional greedy decoding
         ('use_token_role', True),  # whether to use detailed token role
@@ -72,6 +68,7 @@ class DEETaskSetting(TaskSetting):
         # ('use_doc_gcn_enc', False),  # whether to use document-level GCN
         ('neg_field_loss_scaling', 3.0),  # prefer FNs over FPs
         ('layer_norm_eps', 1e-12),  # prefer FNs over FPs
+        ('num_event2role_decoder_layer', 2),
     ]
 
     def __init__(self, **kwargs):
@@ -97,8 +94,8 @@ class DEETask(BasePytorchTask):
         self.event_type_fields_pairs = DEEExample.get_event_type_fields_pairs()
 
         # build example loader
-        # self.example_loader_func = DEEExampleLoader(self.setting.rearrange_sent, self.setting.max_sent_len, self.setting.train_on_multi_events, self.setting.train_on_single_event)
-        self.example_loader_func = DEEExampleLoader(self.setting.rearrange_sent, self.setting.max_sent_len)
+        self.example_loader_func = DEEExampleLoader(self.setting.rearrange_sent, self.setting.max_sent_len, self.setting.train_on_multi_events, self.setting.train_on_single_event)
+        # self.example_loader_func = DEEExampleLoader(self.setting.rearrange_sent, self.setting.max_sent_len)
 
         # build feature converter
         self.feature_converter_func = DEEFeatureConverter(

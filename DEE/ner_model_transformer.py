@@ -1,7 +1,3 @@
-# -*- coding: utf-8 -*-
-# AUTHOR: Shun Zheng
-# DATE: 19-9-19
-
 import torch
 from torch import nn
 import torch.nn.functional as F

@@ -1,16 +1,18 @@
-# -*- coding: utf-8 -*-
-# AUTHOR: Hang Yang
-# DATE: 21-7-10
-
-import argparse
 import os
+import argparse
+import functools
+
 import torch.distributed as dist
 
-from DEE.utils import set_basic_log_config, strtobool, default_dump_result_json
+from DEE.utils import set_basic_log_config, strtobool
 from DEE.DEE_task import DEETask, DEETaskSetting
-# from DEE.lg4dee_helper import aggregate_task_eval_info, print_total_eval_info, print_single_vs_multi_performance
+from DEE.dee_helper import aggregate_task_eval_info, print_total_eval_info, print_single_vs_multi_performance
 
 set_basic_log_config()
+
+
+def chain_prod(num_list):
+    return functools.reduce(lambda x, y: x * y, num_list)
 
 
 def parse_args(in_args=None):
@@ -85,7 +87,7 @@ if __name__ == '__main__':
     trainable_param = []
     un_trainable_param = []
     for name, parameters in dee_task.model.named_parameters():
-        num_params = len(parameters)
+        num_params = chain_prod(parameters.size())
         total_param.append(num_params)
         if parameters.requires_grad:
             trainable_param.append(num_params)
@@ -107,7 +109,25 @@ if __name__ == '__main__':
         dee_task.logging('Skip training')
         dee_task.resume_save_eval_at(epoch = dee_setting.start_epoch, resume_cpt_flag=True, save_cpt_flag=False, dee_setting = dee_setting)
 
+    if in_argv.re_eval_flag:
+        doc_type2data_span_type2model_str2epoch_res_list = dee_task.reevaluate_dee_prediction(dump_flag=True)
+    else:
+        doc_type2data_span_type2model_str2epoch_res_list = aggregate_task_eval_info(in_argv.output_dir, dump_flag=True)
+    doc_type = "overall"
+    data_type = 'test'
+    span_type = 'pred_span'
+    metric_type = 'micro'
+    mstr_bepoch_list = print_total_eval_info(
+        doc_type2data_span_type2model_str2epoch_res_list,
+        metric_type=metric_type, span_type=span_type,
+        model_strs=in_argv.eval_model_names.split(','),
+        target_set=data_type
+    )
+    sm_results = print_single_vs_multi_performance(
+        mstr_bepoch_list, in_argv.output_dir, dee_task.test_features,
+        metric_type=metric_type, data_type=data_type, span_type=span_type
+    )
 
-
-
-
+    # ensure every processes exit at the same time
+    if dist.is_initialized():
+        dist.barrier()
