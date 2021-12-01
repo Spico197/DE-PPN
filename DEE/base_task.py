@@ -615,7 +615,7 @@ class BasePytorchTask(object):
             #     if self.model_save:
             #         torch.save(self.model.state_dict(), self.model_save_path)
 
-    def base_eval(self, eval_dataset, get_info_on_batch, load_model = False, reduce_info_type='mean',dump_pkl_path=None, **func_kwargs):
+    def base_eval(self, eval_dataset, get_info_on_batch, load_model = False, reduce_info_type='mean', dump_pkl_path=None, **func_kwargs):
         self.logging('='*20 + 'Start Base Evaluation' + '='*20)
         self.logging("\tNum examples = {}".format(len(eval_dataset)))
         self.logging("\tBatch size = {}".format(self.setting.eval_batch_size))

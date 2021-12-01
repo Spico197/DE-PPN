@@ -300,14 +300,10 @@ class DEETask(BasePytorchTask):
         if self.is_master_node():
             print('\nPROGRESS: {:.2f}%\n'.format(epoch / self.setting.num_train_epochs * 100))
         self.logging('Current teacher prob {}'.format(self.get_teacher_prob(batch_inc_flag=False)))
+
         if resume_cpt_flag:
             self.resume_cpt_at(epoch)
             self.logging('resume_cpt_at {}.{}'.format(self.setting.cpt_file_name, epoch))
-            self.setting = dee_setting
-            # self.logging('Setting: {}'.format(self.setting, ensure_ascii=False, indent=2))
-        # if self.is_master_node() and save_cpt_flag:
-        #     start_epoch = self.setting.start_epoch
-        #     self.save_cpt_at(start_epoch)
 
         data_type = 'test'
         gold_span_flag = False
@@ -333,16 +329,15 @@ class DEETask(BasePytorchTask):
         else:
             model_str = heuristic_type
 
-        start_epoch = self.setting.start_epoch
-        decode_dump_name = decode_dump_template.format(data_type, span_str, model_str, start_epoch)
-        eval_dump_name = eval_dump_template.format(data_type, span_str, model_str, start_epoch)
+        decode_dump_name = decode_dump_template.format(data_type, span_str, model_str, epoch)
+        eval_dump_name = eval_dump_template.format(data_type, span_str, model_str, epoch)
         total_event_decode_results, total_eval_res = self.eval(features, dataset, use_gold_span=gold_span_flag, heuristic_type=heuristic_type,
                   dump_decode_pkl_name=decode_dump_name, dump_eval_json_name=eval_dump_name, eval_process = resume_cpt_flag)
         test_result_dict = total_eval_res
         self.logging('{} F1-score-\t all {}'.format(data_type, test_result_dict[-1]))
 
-        decode_dump_name = decode_dump_template.format('dev', span_str, model_str, start_epoch)
-        eval_dump_name = eval_dump_template.format('dev', span_str, model_str, start_epoch)
+        decode_dump_name = decode_dump_template.format('dev', span_str, model_str, epoch)
+        eval_dump_name = eval_dump_template.format('dev', span_str, model_str, epoch)
         total_event_decode_results, total_eval_res = self.eval(self.dev_features, self.dev_dataset, use_gold_span=gold_span_flag, heuristic_type=heuristic_type,
                   dump_decode_pkl_name=decode_dump_name, dump_eval_json_name=eval_dump_name, eval_process = resume_cpt_flag)
         dev_result_dict = total_eval_res
@@ -351,14 +346,13 @@ class DEETask(BasePytorchTask):
         # single_f1, multi_f1, average = test_result_dict['all_type_result'].values()
         micro_f1 = dev_result_dict[-1]['MicroF1']
 
-        start_epoch = self.setting.start_epoch
         if self.is_master_node() and save_cpt_flag and micro_f1 > self.best_micro_f1:
-            self.save_cpt_at(start_epoch)
+            self.save_cpt_at(epoch)
             self.best_micro_f1 = micro_f1
 
         if not resume_cpt_flag:
-            self.logging('save path\t {}'.format(start_epoch))
-            eval_result_file_path = '{}_result.json'.format(start_epoch)
+            self.logging('save path\t {}'.format('{}.cpt.{}'.format(self.setting.cpt_file_name, epoch)))
+            eval_result_file_path = '{}_result.json'.format(epoch)
             eval_result_file_path = os.path.join(self.setting.output_dir, eval_result_file_path)
             result_dict = {
                 'epoch': epoch,

@@ -1,6 +1,7 @@
 <div align="center">
   <h1>Document-level Event Extraction via Parallel Prediction Networks</h1>
-  <a href="#overview">🧱 Overview</a> | <a href="#datasets">💾 Datasets</a> | <a href="#dependencies">🌴 Dependencies</a> | <a href="#quickstart">🚀 QuickStart</a> | <a href="#implementation-detail">🔍 Implementation Details</a> | <a href="#results">📋 Results</a> | <a href="#reference">💌 Reference</a>
+  <a href="#overview">🧱 Overview</a> | <a href="#datasets">💾 Datasets</a> | <a href="#dependencies">🌴 Dependencies</a> | <a href="#quickstart">🚀 QuickStart</a> <br />
+  <a href="#implementation-detail">🔍 Implementation Details</a> | <a href="#results">📋 Results</a> | <a href="#reference">💌 Reference</a>
 </div>
 
 
@@ -49,7 +50,7 @@ $ nohup bash run.sh >deppn.log 2>&1 &
 <h2 id="implementation-detail">🔍 Implementation Details</h2>
 
 **Q:** How to construct the golden targets?
-- In `DEEFeature.extract_predicted_instances`, records with **all** `None` arguments are labelled as `0` (NULL event).
+- ~~In `DEEFeature.extract_predicted_instances`, records with **all** `None` arguments are labelled as `0` (NULL event).~~
 - For arguments, the last entity (`role4None_embed`) represents `NULL` entity and is used as a role placeholder.
 
 **Q:** How to select the best checkpoint?
@@ -58,7 +59,7 @@ $ nohup bash run.sh >deppn.log 2>&1 &
 
 <h2 id="results">📋 Results</h2>
 
-Still running ...
+I've sync the codes with the latest official remote (f920cd67ec0eb1d8386d3231c97371c3e11f0387), and here are the results.
 
 The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN` is our reproduced results.
 
@@ -66,7 +67,7 @@ The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN
 
 | Model  | Train (min/epoch) | Inference (docs/s) | Total Training Process (hours) |
 | :----- | ----------------: | -----------------: | -----------------------------: |
-| DE-PPN |                   |                    |                                |
+| DE-PPN |             52.9  |               3.1  |                          94.5  |
 
 - Main Results
 
@@ -133,27 +134,27 @@ The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN
   </tr>
   <tr>
     <td>DE-PPN</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>36.3</td>
+    <td>38.1</td>
+    <td>37.2</td>
+    <td>34.0</td>
+    <td>50.9</td>
+    <td>40.8</td>
+    <td>34.6</td>
+    <td>43.2</td>
+    <td>38.4</td>
+    <td>32.0</td>
+    <td>39.8</td>
+    <td>35.5</td>
+    <td>44.5</td>
+    <td>38.9</td>
+    <td>41.5</td>
+    <td>36.3</td>
+    <td>42.2</td>
+    <td>38.7</td>
+    <td>38.8</td>
+    <td>42.0</td>
+    <td>40.4</td>
   </tr>
 </tbody>
 </table>
@@ -209,20 +210,20 @@ The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN
   </tr>
   <tr>
     <td>DE-PPN</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>36.3</td>
+    <td>38.4</td>
+    <td>40.1</td>
+    <td>48.5</td>
+    <td>38.1</td>
+    <td>39.1</td>
+    <td>37.3</td>
+    <td>31.4</td>
+    <td>40.3</td>
+    <td>42.7</td>
+    <td>38.4</td>
+    <td>40.0</td>
+    <td>39.6</td>
+    <td>41.7</td>
   </tr>
 </tbody>
 </table>
