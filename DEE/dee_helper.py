@@ -344,7 +344,8 @@ class DEEFeature(object):
         for i, (event_arg_idxs_objs, event_type_idxs) in enumerate(zip(self.event_arg_idxs_objs_list, self.event_type_labels)):
             if event_arg_idxs_objs is None:
                 pred_event_arg_idxs_objs_lists.append(event_arg_idxs_objs)
-                pred_event_type_idxs_lists.append(list((event_type_idxs,)))
+                # pred_event_type_idxs_lists.append(list((event_type_idxs,)))
+                pred_event_type_idxs_lists.append(event_type_idxs)
             else:
                 pred_event_arg_idxs_objs_list = []
                 pred_event_type_idxs_list = []
@@ -364,70 +365,6 @@ class DEEFeature(object):
         # pred_event_type_idxs_list = pred_event_type_idxs_list[:self.num_generated_triplets]
         # pred_event_arg_idxs_objs_list = pred_event_arg_idxs_objs_list[:self.num_generated_triplets]
         return gold_span_idx2pred_span_idx, pred_event_arg_idxs_objs_lists, pred_event_type_idxs_lists
-
-        # missed_sent_idx_list = list(set(missed_sent_idx_list))
-
-        # pred_event_arg_idxs_objs_list = []
-        # for event_arg_idxs_objs in self.event_arg_idxs_objs_list:
-        #     if event_arg_idxs_objs is None:
-        #         pred_event_arg_idxs_objs_list.append(None)
-        #     else:
-        #         pred_event_arg_idxs_objs = []
-        #         for event_arg_idxs in event_arg_idxs_objs:
-        #             pred_event_arg_idxs = []
-        #             for gold_span_idx in event_arg_idxs:
-        #                 if gold_span_idx in gold_span_idx2pred_span_idx:
-        #                     pred_event_arg_idxs.append(
-        #                         gold_span_idx2pred_span_idx[gold_span_idx]
-        #                     )
-        #                 else:
-        #                     pred_event_arg_idxs.append(None)
-
-        #             pred_event_arg_idxs_objs.append(tuple(pred_event_arg_idxs))
-        #         pred_event_arg_idxs_objs_list.append(pred_event_arg_idxs_objs)
-
-        # # event_idx -> field_idx -> pre_path -> cur_span_idx_set
-        # # pred_dag_info = self.build_dag_info(pred_event_arg_idxs_objs_list)
-
-        # non_ent_idx = len(pred_span_token_tup_list) - 1
-        # pred_instances, pred_event_validation_flags = self.extract_predicted_instances(pred_event_arg_idxs_objs_list, non_ent_idx)
-
-        # if return_miss:
-        #     # return pred_dag_info, missed_span_idx_list, missed_sent_idx_list
-        #     return gold_span_idx2pred_span_idx, pred_instances, pred_event_validation_flags
-        # else:
-        #     # return pred_dag_info
-        #     return gold_span_idx2pred_span_idx
-
-    def extract_predicted_instances(self, pred_event_arg_idxs_objs_list, non_ent_idx):
-        validation_flags = [list() for _ in range(len(event_type_fields_list))]
-        instances = [list() for _ in range(len(event_type_fields_list))]
-
-        for event_idx, event_instances in enumerate(pred_event_arg_idxs_objs_list):
-            if event_instances is None:
-                # tzhu: make sure there is at least one gold instance for each type
-                _ins = [non_ent_idx for _ in range(len(event_type_fields_list[event_idx][1]))]
-                instances[event_idx].append(_ins)
-                validation_flags[event_idx].append(0)
-            else:
-                for instance in event_instances:
-                    if all(arg is None for arg in instance):
-                        # instances.append(None)
-                        # continue
-                        _ins = [non_ent_idx for _ in range(len(event_type_fields_list[event_idx][1]))]
-                        instances[event_idx].append(_ins)
-                        validation_flags[event_idx].append(0)
-                    else:
-                        _ins = []
-                        validation_flags[event_idx].append(1)
-                        for arg in instance:
-                            if arg is not None:
-                                _ins.append(arg)
-                            else:
-                                _ins.append(non_ent_idx)
-                        instances[event_idx].append(_ins)
-
-        return instances, validation_flags
 
     def get_event_args_objs_list(self):
         event_args_objs_list = []
@@ -788,12 +725,9 @@ def aggregate_task_eval_info(eval_dir_path, target_file_pre='dee_eval', target_f
             epoch_res_list = model_str2epoch_res_list[model_str]
 
             epoch = int(epoch)
-            try:
-                fp = os.path.join(eval_dir_path, fn)
-                eval_res = default_load_json(fp)
-                epoch_res_list.append((epoch, eval_res))
-            except:
-                breakpoint()
+            fp = os.path.join(eval_dir_path, fn)
+            eval_res = default_load_json(fp)
+            epoch_res_list.append((epoch, eval_res))
 
     for data_span_type, model_str2epoch_res_list in data_span_type2model_str2epoch_res_list.items():
         for model_str, epoch_res_list in model_str2epoch_res_list.items():

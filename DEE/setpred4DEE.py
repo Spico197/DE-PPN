@@ -102,6 +102,9 @@ class SetPred4DEE(nn.Module):
 
         ### event type classification (no-None or None)
         pred_doc_event_logps = self.event_cls(hidden_states).squeeze(0)
+        if train_flag:
+            event_type_idxs_list = doc_span_info.pred_event_type_idxs_list[event_type_pred][:self.num_generated_sets]
+            event_arg_idxs_objs_list = doc_span_info.pred_event_arg_idxs_objs_list[event_type_pred][:self.num_generated_sets]
         # event_type_idxs_list = doc_span_info.pred_event_type_idxs_list[event_type_pred][:self.num_generated_sets]
         # event_arg_idxs_objs_list = doc_span_info.pred_event_arg_idxs_objs_list[event_type_pred][:self.num_generated_sets]
 
@@ -149,14 +152,22 @@ class SetPred4DEE(nn.Module):
         pred_role_logits = pred_role_logits.view(self.num_generated_sets, num_roles, -1) # [num_sets, num_roles, num_entities]
         pred_role_logits = pred_role_logits[:,:,:num_pred_entities]
         outputs = {'pred_doc_event_logps': pred_doc_event_logps,'pred_role_logits': pred_role_logits}
-        targets = {'doc_event_label': doc_event_label,'role_label': role_label}
+        # targets = {'doc_event_label': doc_event_label,'role_label': role_label}
         # targets = {'doc_event_label': event_type_idxs_list,'role_label': event_arg_idxs_objs_list}
 
+        # if train_flag:
+        #     loss = self.criterion(outputs, targets)
+        #     return loss, outputs
+        # else:
+        #     return outputs, targets
+
         if train_flag:
+            targets = {'doc_event_label': event_type_idxs_list, 'role_label': event_arg_idxs_objs_list}
             loss = self.criterion(outputs, targets)
             return loss, outputs
         else:
-            return outputs, targets
+            return outputs
+
 
 class DecoderLayer(nn.Module):
     def __init__(self, config):

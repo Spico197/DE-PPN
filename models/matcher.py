@@ -40,15 +40,16 @@ class HungarianMatcher(nn.Module):
         pred_role_list = pred_role.split(1,1)
         gold_role_list = gold_role.split(1,1)
 
-        # cost = self.cost_role * pred_role[:, gold_role_tensor]
-        cost_list = []
-        for pred_role_tensor, gold_role_tensor in zip(pred_role_list, gold_role_list):
-            pred_role_tensor = pred_role_tensor.squeeze(1)
-            cost_list.append( -self.cost_role * pred_role_tensor[:, gold_role_tensor.squeeze(1)] )
+        if self.matcher == "avg":
+            # cost = self.cost_role * pred_role[:, gold_role_tensor]
+            cost_list = []
+            for pred_role_tensor, gold_role_tensor in zip(pred_role_list, gold_role_list):
+                pred_role_tensor = pred_role_tensor.squeeze(1)
+                cost_list.append( -self.cost_role * pred_role_tensor[:, gold_role_tensor.squeeze(1)] )
 
-        event_type_cost = -self.cost_event_type * pred_event[:, gold_event_tensor]
-        # cost_list.append(event_type_cost)
-        # cost = torch.index_select(pred_role, 1, gold_role)
+            event_type_cost = -self.cost_event_type * pred_event[:, gold_event_tensor]
+            # cost_list.append(event_type_cost)
+            # cost = torch.index_select(pred_role, 1, gold_role)
 
         role_cost_tensor = torch.stack(cost_list)
         role_cost_tensor = role_cost_tensor.transpose(1,0)
