@@ -667,10 +667,22 @@ def prepare_doc_batch_dict(doc_fea_list):
 
 def measure_dee_prediction(event_type_fields_pairs, features, event_decode_results,
                            dump_json_path=None):
+    pred_event_types = []
+    gold_event_types = []
+    pred_spans_token_tuple_list = []
+    gold_spans_token_tuple_list = []
     pred_record_mat_list = []
     gold_record_mat_list = []
+
     for term in event_decode_results:
-        ex_idx, pred_event_type_labels, pred_record_mat = term[:3]
+        ex_idx, pred_event_type_labels, pred_record_mat, doc_span_info = term[:4]
+        doc_fea = features[ex_idx]
+
+        pred_event_types.append(pred_event_type_labels)
+        gold_event_types.append(doc_fea.event_type_labels)
+        pred_spans_token_tuple_list.append(doc_span_info.span_token_tup_list)
+        gold_spans_token_tuple_list.append(doc_fea.span_token_ids_list)
+
         pred_record_mat = [
             [
                 [
@@ -680,7 +692,6 @@ def measure_dee_prediction(event_type_fields_pairs, features, event_decode_resul
             ] if pred_records is not None else None
             for pred_records in pred_record_mat
         ]
-        doc_fea = features[ex_idx]
         assert isinstance(doc_fea, DEEFeature)
         gold_record_mat = [
             [
@@ -696,7 +707,11 @@ def measure_dee_prediction(event_type_fields_pairs, features, event_decode_resul
         gold_record_mat_list.append(gold_record_mat)
 
     g_eval_res = measure_event_table_filling(
-        pred_record_mat_list, gold_record_mat_list, event_type_fields_pairs, dict_return=True
+        pred_record_mat_list, gold_record_mat_list,
+        event_type_fields_pairs,
+        pred_event_types, gold_event_types,
+        pred_spans_token_tuple_list, gold_spans_token_tuple_list,
+        dict_return=True
     )
 
     if dump_json_path is not None:

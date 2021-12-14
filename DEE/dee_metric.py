@@ -140,8 +140,101 @@ def get_prec_recall_f1(tp, fp, fn):
     return prec, rec, f1
 
 
-def measure_event_table_filling(pred_record_mat_list, gold_record_mat_list, event_type_roles_list, avg_type='micro',
-                                dict_return=False):
+def get_mcml_prf1(pred_event_types, gold_event_types, event_type_roles_list):
+    """get p r f1 measures of classification results"""
+    len_events = len(event_type_roles_list)
+    event_tp_fp_fn = [[0] * 3 for _ in range(len_events)]
+    event_p_r_f1 = [[0.0] * 3 for _ in range(len_events)]
+    tot_tp_fp_fn = [0] * 3
+    tot_p_r_f1 = [0.0] * 3
+    for preds, golds in zip(pred_event_types, gold_event_types):
+        for event_idx, (pred, gold) in enumerate(zip(preds, golds)):
+            if pred == 0:
+                if gold == 0:  # TN
+                    pass
+                else:  # FN
+                    event_tp_fp_fn[event_idx][2] += 1
+            else:
+                if gold == 0:  # FP
+                    event_tp_fp_fn[event_idx][1] += 1
+                else:  # TP: if both pred and gold contains paths for this event, then it's TP
+                    event_tp_fp_fn[event_idx][0] += 1
+    for event_idx, tp_fp_fn in enumerate(event_tp_fp_fn):
+        tot_tp_fp_fn[0] += tp_fp_fn[0]
+        tot_tp_fp_fn[1] += tp_fp_fn[1]
+        tot_tp_fp_fn[2] += tp_fp_fn[2]
+        prec, rec, f1 = get_prec_recall_f1(*tp_fp_fn)
+        event_p_r_f1[event_idx][0] = prec
+        event_p_r_f1[event_idx][1] = rec
+        event_p_r_f1[event_idx][2] = f1
+
+    micro_p, micro_r, micro_f1 = get_prec_recall_f1(*tot_tp_fp_fn)
+    tot_p_r_f1[0] = micro_p
+    tot_p_r_f1[1] = micro_r
+    tot_p_r_f1[2] = micro_f1
+    macro_p = sum([x[0] for x in event_p_r_f1]) / len_events
+    macro_r = sum([x[1] for x in event_p_r_f1]) / len_events
+    macro_f1 = sum([x[2] for x in event_p_r_f1]) / len_events
+
+    results = {
+        "MacroPrecision": macro_p,
+        "MacroRecall": macro_r,
+        "MacroF1": macro_f1,
+        "MicroPrecision": micro_p,
+        "MicroRecall": micro_r,
+        "MicroF1": micro_f1,
+        "TP": tot_tp_fp_fn[0],
+        "FP": tot_tp_fp_fn[1],
+        "FN": tot_tp_fp_fn[2],
+        "Events": [{
+            "EventType": event_type_roles_list[event_idx][0],
+            "Precision": event_p_r_f1[event_idx][0],
+            "Recall": event_p_r_f1[event_idx][1],
+            "F1": event_p_r_f1[event_idx][2],
+            "TP": event_tp_fp_fn[event_idx][0],
+            "FP": event_tp_fp_fn[event_idx][1],
+            "FN": event_tp_fp_fn[event_idx][2],
+        } for event_idx in range(len_events)]
+    }
+    return results
+
+
+def get_ent_prf1(pred_spans_token_tuple_list, gold_spans_token_tuple_list):
+    """get p r f1 measures of entity prediction results"""
+    tot_tp_fp_fn = [0] * 3
+    tot_p_r_f1 = [0.0] * 3
+
+    for preds, golds in zip(pred_spans_token_tuple_list, gold_spans_token_tuple_list):  # doc
+        pred_event_ents = set(preds)
+        gold_event_ents = set(golds)
+        tot_tp_fp_fn[0] += len(pred_event_ents & gold_event_ents)  # TP
+        tot_tp_fp_fn[1] += len(pred_event_ents - gold_event_ents)  # FP
+        tot_tp_fp_fn[2] += len(gold_event_ents - pred_event_ents)  # FN
+
+    micro_p, micro_r, micro_f1 = get_prec_recall_f1(*tot_tp_fp_fn)
+    tot_p_r_f1[0] = micro_p
+    tot_p_r_f1[1] = micro_r
+    tot_p_r_f1[2] = micro_f1
+
+    results = {
+        "MicroPrecision": micro_p,
+        "MicroRecall": micro_r,
+        "MicroF1": micro_f1,
+        "TP": tot_tp_fp_fn[0],
+        "FP": tot_tp_fp_fn[1],
+        "FN": tot_tp_fp_fn[2]
+    }
+    return results
+
+
+def measure_event_table_filling(
+    pred_record_mat_list, gold_record_mat_list,
+    event_type_roles_list,
+    pred_event_types, gold_event_types,
+    pred_spans_token_tuple_list, gold_spans_token_tuple_list,
+    avg_type='micro',
+    dict_return=False
+):
     """
     The record_mat_list is formated as
     [(Document Index)
@@ -156,6 +249,9 @@ def measure_event_table_filling(pred_record_mat_list, gold_record_mat_list, even
     The argument type should support the '==' operation.
     Empty arguments and records are set as None.
     """
+    event_mcml_prf1 = get_mcml_prf1(pred_event_types, gold_event_types, event_type_roles_list)
+    ent_prf1 = get_ent_prf1(pred_spans_token_tuple_list, gold_spans_token_tuple_list)
+
     event_role_num_list = [len(roles) for _, roles in event_type_roles_list]
     # to store total statistics of TP, FP, FN
     total_event_role_stats = [
@@ -253,6 +349,8 @@ def measure_event_table_filling(pred_record_mat_list, gold_record_mat_list, even
         'TP': g_tpfpfn_stat[0],
         'FP': g_tpfpfn_stat[1],
         'FN': g_tpfpfn_stat[2],
+        'classification': event_mcml_prf1,
+        'entity': ent_prf1,
     }
     event_role_eval_dicts.append(g_eval_dict)
 

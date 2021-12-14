@@ -2,12 +2,12 @@
 
 set -vx
 
-CUDA="0,1,2,3"
-NUM_GPUS=4
+CUDA="2,3"
+NUM_GPUS=2
 
 {
     CUDA_VISIBLE_DEVICES=${CUDA} bash train_multi.sh ${NUM_GPUS} \
-        --task_name='SetPre4DEE_1214' \
+        --task_name='SetPre4DEE_1214_with_component_metrics' \
         --use_bert=False \
         --start_epoch=1 \
         --num_train_epochs=100 \
