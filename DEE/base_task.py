@@ -357,7 +357,8 @@ class BasePytorchTask(object):
             if self.in_distributed_mode():
                 self.model = para.DistributedDataParallel(self.model,
                                                           device_ids=[self.setting.local_rank],
-                                                          output_device=self.setting.local_rank)
+                                                          output_device=self.setting.local_rank,
+                                                          find_unused_parameters=True)
                 self.logging('Wrap distributed data parallel')
                 # self.logging('In Distributed Mode, but do not use DistributedDataParallel Wrapper')
             elif self.n_gpu > 1:
@@ -382,38 +383,63 @@ class BasePytorchTask(object):
         else:
             model_named_parameters = list(self.model.named_parameters())
 
-        def get_no_decay_flag(name):
-            for nd in ['bias', 'gamma', 'beta']:
-                if nd in name:
-                    return True
-            return False
-
-        common_lr = self.setting.learning_rate
-        decoder_lr = self.setting.decoder_lr
-        def get_decode_lr_flag(name):
-            for dn in ['event2role_decoder', 'role_layers', 'set_layers']:
-                if dn in name:
-                    return True
-            return False
-
+        no_decay = ['bias', 'gamma', 'beta']
+        component = ['encoder', 'decoder']
         optimizer_grouped_parameters = [
             {
-                'params': [p for n, p in model_named_parameters if not get_no_decay_flag(n) and not get_decode_lr_flag(n)],
-                'weight_decay_rate': 0.01, 'lr': common_lr
+                'params': [p for n, p in model_named_parameters if n not in no_decay and component[0] in n],
+                'weight_decay_rate': 0.01,
+                'lr': self.setting.learning_rate
             },
             {
-                'params': [p for n, p in model_named_parameters if get_no_decay_flag(n) and not get_decode_lr_flag(n)],
-                'weight_decay_rate': 0.0, 'lr': common_lr
+                'params': [p for n, p in model_named_parameters if n in no_decay and component[0] in n],
+                'weight_decay_rate': 0.0,
+                'lr': self.setting.learning_rate
             },
             {
-                'params': [p for n, p in model_named_parameters if not get_no_decay_flag(n) and get_decode_lr_flag(n)],
-                'weight_decay_rate': 0.01, 'lr': decoder_lr
+                'params': [p for n, p in model_named_parameters if n not in no_decay and component[1] in n],
+                'weight_decay_rate': 0.01,
+                'lr': self.setting.decoder_lr
             },
             {
-                'params': [p for n, p in model_named_parameters if get_no_decay_flag(n) and get_decode_lr_flag(n)],
-                'weight_decay_rate': 0.0, 'lr': decoder_lr
+                'params': [p for n, p in model_named_parameters if n in no_decay and component[1] in n],
+                'weight_decay_rate': 0.0,
+                'lr': self.setting.decoder_lr
             }
         ]
+
+        # def get_no_decay_flag(name):
+        #     for nd in ['bias', 'gamma', 'beta']:
+        #         if nd in name:
+        #             return True
+        #     return False
+
+        # common_lr = self.setting.learning_rate
+        # decoder_lr = self.setting.decoder_lr
+        # def get_decode_lr_flag(name):
+        #     for dn in ['event2role_decoder', 'role_layers', 'set_layers']:
+        #         if dn in name:
+        #             return True
+        #     return False
+
+        # optimizer_grouped_parameters = [
+        #     {
+        #         'params': [p for n, p in model_named_parameters if not get_no_decay_flag(n) and not get_decode_lr_flag(n)],
+        #         'weight_decay_rate': 0.01, 'lr': common_lr
+        #     },
+        #     {
+        #         'params': [p for n, p in model_named_parameters if get_no_decay_flag(n) and not get_decode_lr_flag(n)],
+        #         'weight_decay_rate': 0.0, 'lr': common_lr
+        #     },
+        #     {
+        #         'params': [p for n, p in model_named_parameters if not get_no_decay_flag(n) and get_decode_lr_flag(n)],
+        #         'weight_decay_rate': 0.01, 'lr': decoder_lr
+        #     },
+        #     {
+        #         'params': [p for n, p in model_named_parameters if get_no_decay_flag(n) and get_decode_lr_flag(n)],
+        #         'weight_decay_rate': 0.0, 'lr': decoder_lr
+        #     }
+        # ]
 
         num_train_steps = int(len(self.train_examples)
                               / self.setting.train_batch_size

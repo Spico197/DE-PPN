@@ -44,7 +44,12 @@ Python >= 3.7
 Change `CUDA_VISIBLE_DEVICES` in `run.sh` and run:
 
 ```bash
-$ nohup bash run.sh >deppn.log 2>&1 &
+# single GPU
+$ nohup bash run_single.sh >deppn.log 2>&1 &
+
+# multiple GPUs
+## change `NUM_GPUS` and `CUDA` in `run_multi.sh`
+$ nohup bash run_multi.sh >deppn_multi.log 2>&1 &
 ```
 
 <h2 id="implementation-detail">🔍 Implementation Details</h2>

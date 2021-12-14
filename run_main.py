@@ -29,7 +29,7 @@ def parse_args(in_args=None):
                             help="Models to be evaluated, seperated by ','")
     arg_parser.add_argument('--re_eval_flag', type=strtobool, default=False,
                             help='Whether to re-evaluate previous predictions')
-    arg_parser.add_argument('--event_type_weight', type=list, default=[1, 0.2],
+    arg_parser.add_argument('--event_type_weight', type=str, default='[1, 0.2]',
                             help='dict containing as key the names of the losses and as values their relative weight.')
     arg_parser.add_argument('--resume_latest_cpt', type=strtobool, default=True,
                             help = '# whether to resume latest checkpoints when training for fault tolerance')
@@ -40,8 +40,10 @@ def parse_args(in_args=None):
     arg_parser.add_argument('--num_generated_sets', type=int, default=5)
     arg_parser.add_argument('--use_pgd', type=strtobool, default=False,
                             help = 'whether use adversaral training')
-    arg_parser.add_argument('--cost_weight', type=dict, default={'event_type': 1, 'role': 0.5},
-                            help = 'cost weight for type and role')
+    arg_parser.add_argument('--cost_weight_event_type', type=float, default=1.0,
+                            help = 'cost weight for type')
+    arg_parser.add_argument('--cost_weight_role', type=float, default=0.5,
+                            help = 'cost weight for role')
     arg_parser.add_argument('--train_on_multi_events', type=strtobool, default=False,
                             help = 'whether only train only on multi-events datasets')
     arg_parser.add_argument('--train_on_single_event', type=strtobool, default=False,
@@ -52,6 +54,7 @@ def parse_args(in_args=None):
     arg_parser.add_argument('--use_role_decoder', type=strtobool, default=True)
     arg_parser.add_argument('--use_sent_span_encoder', type=strtobool, default=True)
     arg_parser.add_argument('--start_epoch', type=int, default=30, help = 'start cpt model and save id')
+    arg_parser.add_argument('--parallel_decorate', action="store_true", help='whether to use DataParallel or DistributedDataParallel')
 
     # add task setting arguments
     for key, val in DEETaskSetting.base_attr_default_pairs:
@@ -61,6 +64,12 @@ def parse_args(in_args=None):
             arg_parser.add_argument('--'+ key, type=type(val), default=val)
 
     arg_info = arg_parser.parse_args(args=in_args)
+
+    arg_info.event_type_weight = eval(arg_info.event_type_weight)
+    arg_info.cost_weight = {
+        'event_type': arg_info.cost_weight_event_type,
+        'role': arg_info.cost_weight_role
+    }
 
     return arg_info
 
@@ -81,7 +90,11 @@ if __name__ == '__main__':
     # eval_result_file_path = os.path.join(in_argv.output_dir, '{}_result.json'.format(in_argv.start_epoch))
     # default_dump_result_json(dee_setting, eval_result_file_path)
     # build task
-    dee_task = DEETask(dee_setting, load_train=not in_argv.skip_train)
+    dee_task = DEETask(
+        dee_setting,
+        load_train=not in_argv.skip_train,
+        parallel_decorate=in_argv.parallel_decorate
+    )
 
     total_param = []
     trainable_param = []
