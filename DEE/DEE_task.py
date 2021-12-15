@@ -42,7 +42,7 @@ class DEETaskSetting(TaskSetting):
         ('cpt_file_name', 'SetPre4DEE'),  # decide the identity of checkpoints, evaluation results, etc.
         ('model_type', 'SetPre4DEE'),  # decide the model class used
         ('rearrange_sent', False),  # whether to rearrange sentences
-        ('use_crf_layer', False),  # whether to use CRF Layer
+        ('use_crf_layer', True),  # whether to use CRF Layer
         ('min_teacher_prob', 0.1),  # the minimum prob to use gold spans
         ('schedule_epoch_start', 10),  # from which epoch the scheduled sampling starts
         ('schedule_epoch_length', 10),  # the number of epochs to linearly transit to the min_teacher_prob
