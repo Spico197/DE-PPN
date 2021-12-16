@@ -120,12 +120,13 @@ if __name__ == '__main__':
         dee_task.train(save_cpt_flag=in_argv.save_cpt_flag)
     else:
         dee_task.logging('Skip training')
-        dee_task.resume_save_eval_at(epoch = dee_setting.start_epoch, resume_cpt_flag=True, save_cpt_flag=False, dee_setting = dee_setting)
+        dee_task.resume_save_eval_at(epoch=dee_setting.start_epoch, resume_cpt_flag=True, save_cpt_flag=False, dee_setting=dee_setting)
 
     if in_argv.re_eval_flag:
         doc_type2data_span_type2model_str2epoch_res_list = dee_task.reevaluate_dee_prediction(dump_flag=True)
     else:
         doc_type2data_span_type2model_str2epoch_res_list = aggregate_task_eval_info(in_argv.output_dir, dump_flag=True)
+
     doc_type = "overall"
     data_type = 'test'
     span_type = 'pred_span'

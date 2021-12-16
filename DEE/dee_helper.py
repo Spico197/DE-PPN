@@ -759,7 +759,7 @@ def aggregate_task_eval_info(eval_dir_path, target_file_pre='dee_eval', target_f
 def print_total_eval_info(data_span_type2model_str2epoch_res_list,
                           metric_type='micro',
                           span_type='pred_span',
-                          model_strs=('DCFEE-O', 'DCFEE-M', 'GreedyDec', 'Doc2EDAG'),
+                          model_strs=('DCFEE-O', 'DCFEE-M', 'GreedyDec', 'Doc2EDAG', 'SetPre4DEE'),
                           target_set='test'):
     """Print the final performance by selecting the best epoch on dev set and emitting performance on test set"""
     dev_type = 'dev'
@@ -780,7 +780,6 @@ def print_total_eval_info(data_span_type2model_str2epoch_res_list,
 
     dev_model_str2epoch_res_list = data_span_type2model_str2epoch_res_list[(dev_type, span_type)]
     test_model_str2epoch_res_list = data_span_type2model_str2epoch_res_list[(test_type, span_type)]
-
     has_header = False
     mstr_bepoch_list = []
     print('=' * 15, 'Final Performance (%) (avg_type={})'.format(metric_type), '=' * 15)

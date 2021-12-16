@@ -374,7 +374,8 @@ class SetPre4DEEModel(nn.Module):
         objs = []
         for ok_flag, args in zip(pred_event_flags, pred_role_args):
             # if the record is not recognised as NULL
-            if ok_flag:
+            # 0 means not NULL
+            if ok_flag.item() == 0:
                 arg_list = []
                 for role_idx, arg in enumerate(args):
                     if arg < len_spans:
@@ -382,7 +383,8 @@ class SetPre4DEEModel(nn.Module):
                         arg_list.append(token_tup)
                     else:
                         arg_list.append(None)
-                objs.append(arg_list)
+                if arg_list not in objs:
+                    objs.append(arg_list)
         return objs
 
     def adjust_token_label(self, doc_token_labels_list):

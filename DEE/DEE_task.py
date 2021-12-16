@@ -452,8 +452,6 @@ class DEETask(BasePytorchTask):
                 self.logging('Re-evaluating {}'.format(fp))
                 event_decode_results = default_load_pkl(fp)
 
-
-
         for data_span_type, model_str2epoch_res_list in data_span_type2model_str2epoch_res_list.items():
             for model_str, epoch_res_list in model_str2epoch_res_list.items():
                 epoch_res_list.sort(key=lambda x: x[0])
