@@ -139,27 +139,27 @@ The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN
   </tr>
   <tr>
     <td>DE-PPN</td>
-    <td>36.3</td>
-    <td>38.1</td>
-    <td>37.2</td>
-    <td>34.0</td>
+    <td>64.1</td>
+    <td>54.2</td>
+    <td>58.7</td>
+    <td>84.8</td>
+    <td>76.3</td>
+    <td>80.3</td>
+    <td>59.0</td>
+    <td>49.5</td>
+    <td>53.8</td>
+    <td>63.3</td>
     <td>50.9</td>
-    <td>40.8</td>
-    <td>34.6</td>
-    <td>43.2</td>
-    <td>38.4</td>
-    <td>32.0</td>
-    <td>39.8</td>
-    <td>35.5</td>
-    <td>44.5</td>
-    <td>38.9</td>
-    <td>41.5</td>
-    <td>36.3</td>
-    <td>42.2</td>
-    <td>38.7</td>
-    <td>38.8</td>
-    <td>42.0</td>
-    <td>40.4</td>
+    <td>56.4</td>
+    <td>70.5</td>
+    <td>55.3</td>
+    <td>62.0</td>
+    <td>68.3</td>
+    <td>57.2</td>
+    <td>62.2</td>
+    <td>72.6</td>
+    <td>59.5</td>
+    <td>65.4</td>
   </tr>
 </tbody>
 </table>
@@ -215,20 +215,20 @@ The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN
   </tr>
   <tr>
     <td>DE-PPN</td>
-    <td>36.3</td>
-    <td>38.4</td>
-    <td>40.1</td>
-    <td>48.5</td>
-    <td>38.1</td>
-    <td>39.1</td>
-    <td>37.3</td>
-    <td>31.4</td>
-    <td>40.3</td>
-    <td>42.7</td>
-    <td>38.4</td>
-    <td>40.0</td>
-    <td>39.6</td>
+    <td>68.9</td>
+    <td>49.0</td>
+    <td>83.2</td>
+    <td>56.0</td>
+    <td>60.0</td>
+    <td>45.7</td>
+    <td>67.8</td>
     <td>41.7</td>
+    <td>75.9</td>
+    <td>53.7</td>
+    <td>71.2</td>
+    <td>49.2</td>
+    <td>77.0</td>
+    <td>52.2</td>
   </tr>
 </tbody>
 </table>

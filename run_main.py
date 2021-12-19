@@ -52,7 +52,7 @@ def parse_args(in_args=None):
     arg_parser.add_argument('--train_on_multi_roles', type=strtobool, default=False)
     arg_parser.add_argument('--use_event_type_enc', type=strtobool, default=True)
     arg_parser.add_argument('--use_role_decoder', type=strtobool, default=True)
-    arg_parser.add_argument('--use_sent_span_encoder', type=strtobool, default=True)
+    arg_parser.add_argument('--use_sent_span_encoder', type=strtobool, default=False)
     arg_parser.add_argument('--start_epoch', type=int, default=30, help = 'start cpt model and save id')
     arg_parser.add_argument('--parallel_decorate', action="store_true", help='whether to use DataParallel or DistributedDataParallel')
 
