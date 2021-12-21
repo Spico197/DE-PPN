@@ -6,8 +6,8 @@ from DEE import transformer
 
 BertLayerNorm = torch.nn.LayerNorm
 
-class SetPred4DEE(nn.Module):
 
+class SetPred4DEE(nn.Module):
     def __init__(self, config, event_type2role_index_list, return_intermediate = True):
         super(SetPred4DEE, self).__init__()
         self.config = config
@@ -93,8 +93,8 @@ class SetPred4DEE(nn.Module):
                     all_hidden_states = all_hidden_states + (hidden_states,)
                 layer_outputs = layer_module(
                     # hidden_states, batch_span_context
-                    # hidden_states, doc_sent_context
-                    hidden_states, doc_span_sent_context
+                    hidden_states, doc_sent_context
+                    # hidden_states, doc_span_sent_context
                 )
                 hidden_states = layer_outputs[0]
         else:
@@ -105,17 +105,6 @@ class SetPred4DEE(nn.Module):
         if train_flag:
             event_type_idxs_list = doc_span_info.pred_event_type_idxs_list[event_type_pred][:self.num_generated_sets]
             event_arg_idxs_objs_list = doc_span_info.pred_event_arg_idxs_objs_list[event_type_pred][:self.num_generated_sets]
-        # event_type_idxs_list = doc_span_info.pred_event_type_idxs_list[event_type_pred][:self.num_generated_sets]
-        # event_arg_idxs_objs_list = doc_span_info.pred_event_arg_idxs_objs_list[event_type_pred][:self.num_generated_sets]
-
-        doc_event_label = doc_span_info.pred_event_type_idxs_list[event_type_pred]
-        if isinstance(doc_event_label, int):
-            doc_event_label = [doc_event_label]
-        doc_event_label = doc_event_label[:self.num_generated_sets]
-
-        role_label = doc_span_info.pred_event_arg_idxs_objs_list[event_type_pred]
-        if role_label is not None:
-            role_label = role_label[:self.num_generated_sets]
 
         event_index2role_list = [self.event_type2role_index_list[event_type_pred]]
         event_index2role_index_tensor = torch.tensor(event_index2role_list, dtype=torch.long, requires_grad=False).to(self.device)
@@ -152,14 +141,6 @@ class SetPred4DEE(nn.Module):
         pred_role_logits = pred_role_logits.view(self.num_generated_sets, num_roles, -1) # [num_sets, num_roles, num_entities]
         pred_role_logits = pred_role_logits[:,:,:num_pred_entities]
         outputs = {'pred_doc_event_logps': pred_doc_event_logps,'pred_role_logits': pred_role_logits}
-        # targets = {'doc_event_label': doc_event_label,'role_label': role_label}
-        # targets = {'doc_event_label': event_type_idxs_list,'role_label': event_arg_idxs_objs_list}
-
-        # if train_flag:
-        #     loss = self.criterion(outputs, targets)
-        #     return loss, outputs
-        # else:
-        #     return outputs, targets
 
         if train_flag:
             targets = {'doc_event_label': event_type_idxs_list, 'role_label': event_arg_idxs_objs_list}
