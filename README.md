@@ -16,6 +16,7 @@ I can't wait to have a try and test the performance, so I complete the missing p
 
 This repo is still under construction, and the program is still running to reproduce the final results.
 Due to the time limit, codes are not totally refactored to be more elegant, but I will work on it.
+Once the final results are confirmed to be able to reproduce, this repo would be integrated into [[the DocEE Toolkit]](https://github.com/Spico197/DocEE) .
 
 Please be aware that this is not a totally officially implementated version.
 If you find any problems, do not hesitate to drop me an issue, or reach me by email.
@@ -64,15 +65,15 @@ $ nohup bash run_multi.sh >deppn_multi.log 2>&1 &
 
 <h2 id="results">📋 Results</h2>
 
-I've sync the codes with the latest official remote (f920cd67ec0eb1d8386d3231c97371c3e11f0387), and here are the results.
+I've sync the codes with the latest official remote (d8d357c1e8503d2525e7af5ea1f6aac613f90e53), and here are the results.
 
-The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN` is our reproduced results.
+The results of `Doc2EDAG` is from the original paper.
 
-- Speed
+- Speed (4 * V100)
 
 | Model  | Train (min/epoch) | Inference (docs/s) | Total Training Process (hours) |
 | :----- | ----------------: | -----------------: | -----------------------------: |
-| DE-PPN |             52.9  |               3.1  |                          94.5  |
+| DE-PPN (bs=16, grad accum=4, eval bs=8) |             34.57  |               4.18  |                          74.02  |
 
 - Main Results
 
@@ -138,7 +139,31 @@ The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN
     <td></td>
   </tr>
   <tr>
-    <td>DE-PPN</td>
+    <td>DE-PPN (Paper)</td>
+    <td>78.2</td>
+    <td>69.4</td>
+    <td>73.5</td>
+    <td>89.3</td>
+    <td>85.6</td>
+    <td>87.4</td>
+    <td>69.7</td>
+    <td>79.9</td>
+    <td>74.4</td>
+    <td>81.0</td>
+    <td>71.3</td>
+    <td>75.8</td>
+    <td>83.8</td>
+    <td>73.7</td>
+    <td>78.4</td>
+    <td></td>
+    <td></td>
+    <td>77.9</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>DE-PPN (use_sent_span_encoder=True)</td>
     <td>64.1</td>
     <td>54.2</td>
     <td>58.7</td>
@@ -160,6 +185,54 @@ The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN
     <td>72.6</td>
     <td>59.5</td>
     <td>65.4</td>
+  </tr>
+  <tr>
+    <td>DE-PPN (use_sent_span_encoder=False)</td>
+    <td>67.2</td>
+    <td>51.6</td>
+    <td>58.4</td>
+    <td>86.9</td>
+    <td>67.4</td>
+    <td>75.9</td>
+    <td>61.8</td>
+    <td>49.6</td>
+    <td>55.1</td>
+    <td>66.5</td>
+    <td>50.4</td>
+    <td>57.3</td>
+    <td>71.9</td>
+    <td>57.7</td>
+    <td>64.0</td>
+    <td>70.9</td>
+    <td>55.3</td>
+    <td>62.1</td>
+    <td>74.2</td>
+    <td>58.6</td>
+    <td>65.5</td>
+  </tr>
+  <tr>
+    <td>DE-PPN (d8d357 use_sent_span_encoder=False, use doc_sent_context in set_layers)</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
   </tr>
 </tbody>
 </table>
@@ -214,7 +287,24 @@ The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN
     <td></td>
   </tr>
   <tr>
-    <td>DE-PPN</td>
+    <td>DE-PPN (Paper)</td>
+    <td>82.1</td>
+    <td>63.5</td>
+    <td>89.1</td>
+    <td>70.5</td>
+    <td>79.7</td>
+    <td>66.7</td>
+    <td>80.6</td>
+    <td>69.6</td>
+    <td>88.0</td>
+    <td>73.2</td>
+    <td>83.9</td>
+    <td>68.7</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>DE-PPN (use_sent_span_encoder=True)</td>
     <td>68.9</td>
     <td>49.0</td>
     <td>83.2</td>
@@ -230,8 +320,45 @@ The results of `Doc2EDAG` is from the original paper, and the results of `DE-PPN
     <td>77.0</td>
     <td>52.2</td>
   </tr>
+  <tr>
+    <td>DE-PPN (use_sent_span_encoder=False)</td>
+    <td>67.2</td>
+    <td>49.8</td>
+    <td>77.9</td>
+    <td>58.9</td>
+    <td>62.7</td>
+    <td>45.2</td>
+    <td>64.4</td>
+    <td>48.3</td>
+    <td>74.6</td>
+    <td>57.7</td>
+    <td>69.3</td>
+    <td>52.0</td>
+    <td>74.0</td>
+    <td>56.0</td>
+  </tr>
+  <tr>
+    <td>DE-PPN (d8d357 use_sent_span_encoder=False, use doc_sent_context in set_layers)</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
 </tbody>
 </table>
+
+- Logs
+  - DE-PPN (use_sent_span_encoder=False): [[Log]](Logs/shrink-deppn-reprod-1219-with_crf-ok_flag0-removeDup-noModEnc.log)
 
 <h2 id="reference">💌 Reference</h2>
 

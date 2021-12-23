@@ -2,8 +2,9 @@
 __pycache__/
 Data/*.json
 Exps/
-!Data/sample_500.json
-debug.py
 Logs/
 original.json
+debug.py
 debug_me.py
+!Logs/shrink-deppn-reprod-1219-with_crf-ok_flag0-removeDup-noModEnc.log
+!Data/sample_500.json
