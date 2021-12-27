@@ -212,27 +212,27 @@ The results of `Doc2EDAG` is from the original paper.
   </tr>
   <tr>
     <td>DE-PPN (d8d357 use_sent_span_encoder=False, use doc_sent_context in set_layers)</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>67.5</td>
+    <td>40.9</td>
+    <td>51.0</td>
+    <td>85.2</td>
+    <td>55.2</td>
+    <td>67.0</td>
+    <td>61.2</td>
+    <td>51.3</td>
+    <td>55.8</td>
+    <td>69.4</td>
+    <td>50.4</td>
+    <td>58.4</td>
+    <td>70.7</td>
+    <td>43.6</td>
+    <td>53.9</td>
+    <td>70.8</td>
+    <td>48.3</td>
+    <td>57.2</td>
+    <td>73.2</td>
+    <td>47.2</td>
+    <td>57.4</td>
   </tr>
 </tbody>
 </table>
@@ -339,20 +339,20 @@ The results of `Doc2EDAG` is from the original paper.
   </tr>
   <tr>
     <td>DE-PPN (d8d357 use_sent_span_encoder=False, use doc_sent_context in set_layers)</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>62.7</td>
+    <td>39.7</td>
+    <td>68.8</td>
+    <td>52.3</td>
+    <td>62.5</td>
+    <td>46.9</td>
+    <td>66.6</td>
+    <td>47.6</td>
+    <td>62.3</td>
+    <td>49.1</td>
+    <td>64.6</td>
+    <td>47.1</td>
+    <td>65.3</td>
+    <td>48.4</td>
   </tr>
 </tbody>
 </table>
