@@ -505,6 +505,7 @@ class SetPre4DEEModel(nn.Module):
                         doc_span_info_list[batch_idx],
                     )
                 )
+
             mix_loss = self.get_mix_loss(doc_sent_loss_list, doc_event_loss_list, doc_span_info_list)
             return mix_loss
         else:
